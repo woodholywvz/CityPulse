@@ -3,22 +3,44 @@
 @tailwind utilities;
 
 :root {
-  --background: 38 100% 98%;
-  --foreground: 222 47% 11%;
+  --background: 34 46% 97%;
+  --foreground: 221 39% 11%;
   --card: 0 0% 100%;
-  --card-foreground: 222 47% 11%;
-  --primary: 12 91% 57%;
+  --card-foreground: 221 39% 11%;
+  --primary: 12 86% 56%;
   --primary-foreground: 0 0% 100%;
-  --secondary: 196 83% 91%;
-  --secondary-foreground: 222 47% 11%;
-  --muted: 35 40% 94%;
-  --muted-foreground: 215 16% 38%;
-  --accent: 174 52% 89%;
-  --accent-foreground: 222 47% 11%;
-  --border: 24 24% 86%;
-  --input: 24 24% 86%;
-  --ring: 12 91% 57%;
+  --secondary: 193 59% 91%;
+  --secondary-foreground: 221 39% 11%;
+  --muted: 35 32% 93%;
+  --muted-foreground: 215 16% 35%;
+  --accent: 173 37% 87%;
+  --accent-foreground: 221 39% 11%;
+  --border: 28 19% 84%;
+  --input: 28 19% 84%;
+  --ring: 12 86% 56%;
+  --surface-strong: 33 55% 96%;
+  --surface-elevated: 0 0% 100%;
   --radius: 1.25rem;
+}
+
+.dark {
+  --background: 218 37% 8%;
+  --foreground: 210 20% 96%;
+  --card: 220 26% 12%;
+  --card-foreground: 210 20% 96%;
+  --primary: 19 90% 61%;
+  --primary-foreground: 221 39% 11%;
+  --secondary: 217 24% 18%;
+  --secondary-foreground: 210 20% 96%;
+  --muted: 219 19% 16%;
+  --muted-foreground: 215 12% 71%;
+  --accent: 186 25% 19%;
+  --accent-foreground: 182 56% 83%;
+  --border: 217 18% 23%;
+  --input: 217 18% 23%;
+  --ring: 19 90% 61%;
+  --surface-strong: 218 34% 11%;
+  --surface-elevated: 220 27% 14%;
 }
 
 * {
@@ -32,14 +54,30 @@ html {
 body {
   @apply bg-background font-sans text-foreground antialiased;
   background-image:
-    linear-gradient(180deg, rgba(255, 247, 237, 1) 0%, rgba(255, 251, 245, 1) 45%, rgba(241, 245, 249, 0.8) 100%),
+    linear-gradient(180deg, rgba(252, 248, 244, 1) 0%, rgba(252, 251, 248, 1) 44%, rgba(241, 245, 249, 0.8) 100%),
     radial-gradient(circle at top left, rgba(249, 115, 22, 0.12), transparent 30%),
     radial-gradient(circle at bottom right, rgba(14, 165, 233, 0.12), transparent 28%);
   min-height: 100vh;
 }
 
+.dark body {
+  background-image:
+    linear-gradient(180deg, rgba(11, 17, 29, 1) 0%, rgba(10, 16, 27, 1) 48%, rgba(15, 23, 42, 1) 100%),
+    radial-gradient(circle at top left, rgba(249, 115, 22, 0.16), transparent 28%),
+    radial-gradient(circle at bottom right, rgba(14, 165, 233, 0.12), transparent 24%);
+}
+
 a {
   @apply transition-colors;
+}
+
+.leaflet-container {
+  @apply rounded-[1.5rem] border border-border bg-card;
+  font: inherit;
+}
+
+.leaflet-control-attribution {
+  @apply hidden;
 }
 
 ::selection {

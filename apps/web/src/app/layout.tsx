@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { Manrope, Space_Grotesk } from "next/font/google";
 
 import "@/app/globals.css";
+import "leaflet/dist/leaflet.css";
+
+import { AppProviders } from "@/app/providers";
 
 const manrope = Manrope({
   subsets: ["latin"],
@@ -29,7 +32,9 @@ export default function RootLayout({
       className={`${manrope.variable} ${spaceGrotesk.variable}`}
       suppressHydrationWarning
     >
-      <body>{children}</body>
+      <body>
+        <AppProviders>{children}</AppProviders>
+      </body>
     </html>
   );
 }

@@ -25,7 +25,8 @@ class ModerationState(StrEnum):
 class SwipeDirection(StrEnum):
     SUPPORT = "support"
     SKIP = "skip"
-    DISMISS = "dismiss"
+    MORE_LIKE_THIS = "more_like_this"
+    LESS_LIKE_THIS = "less_like_this"
 
 
 class ModerationResultStatus(StrEnum):
