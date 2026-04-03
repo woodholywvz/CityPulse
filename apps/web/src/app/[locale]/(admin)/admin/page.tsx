@@ -1,4 +1,4 @@
-import { AdminModerationScreen } from "@/features/admin-moderation/components/admin-moderation-screen";
+import { AdminDashboardScreen } from "@/features/admin-console/components/admin-dashboard-screen";
 
 export default async function AdminDashboardPage({
   params,
@@ -7,5 +7,5 @@ export default async function AdminDashboardPage({
 }>) {
   const { locale } = await params;
 
-  return <AdminModerationScreen locale={locale} />;
+  return <AdminDashboardScreen locale={locale} />;
 }

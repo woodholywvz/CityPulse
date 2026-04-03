@@ -1,4 +1,4 @@
-import { AdminUserIntegrityScreen } from "@/features/admin-integrity/components/admin-user-integrity-screen";
+import { AdminUserProfileScreen } from "@/features/admin-console/components/admin-user-profile-screen";
 
 export default async function AdminUserIntegrityPage({
   params,
@@ -7,5 +7,5 @@ export default async function AdminUserIntegrityPage({
 }>) {
   const { locale, userId } = await params;
 
-  return <AdminUserIntegrityScreen locale={locale} userId={userId} />;
+  return <AdminUserProfileScreen locale={locale} userId={userId} />;
 }

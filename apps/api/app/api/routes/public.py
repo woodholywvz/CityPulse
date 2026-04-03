@@ -4,6 +4,7 @@ from uuid import UUID
 from fastapi import APIRouter, Query, status
 
 from app.api.deps import CurrentOptionalUser, CurrentUser, SessionDep
+from app.schemas.admin import PublicHeatPointRead
 from app.schemas.issue import (
     IssueCategoryRead,
     IssueDuplicateSuggestionRequest,
@@ -19,6 +20,7 @@ from app.schemas.issue import (
     PublicIssueMapMarkerRead,
     PublicIssueSummaryRead,
 )
+from app.services.admin_analytics import AdminAnalyticsService
 from app.services.public_issues import PublicIssueQuery, PublicIssueService
 
 router = APIRouter(prefix="/public", tags=["public-issues"])
@@ -91,6 +93,20 @@ async def list_public_issue_map_markers(
             longitude=longitude,
             limit=min(limit, 120),
         )
+    )
+
+
+@router.get("/issues/heatmap", response_model=list[PublicHeatPointRead])
+async def list_public_issue_heatmap(
+    session: SessionDep,
+    category_id: UUID | None = None,
+    days: int = 180,
+    limit: int = 120,
+) -> list[PublicHeatPointRead]:
+    return await AdminAnalyticsService(session).get_public_heatmap(
+        category_id=category_id,
+        days=min(max(days, 30), 365),
+        limit=min(limit, 180),
     )
 
 

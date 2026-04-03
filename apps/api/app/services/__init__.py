@@ -1,5 +1,10 @@
+from app.services.admin_analytics import AdminAnalyticsService
+from app.services.admin_audit import AdminAuditService
 from app.services.admin_integrity import AdminIntegrityService
+from app.services.admin_issues import AdminIssueService
 from app.services.admin_moderation import AdminModerationService
+from app.services.admin_tickets import AdminTicketService
+from app.services.admin_users import AdminUserService
 from app.services.ai_rewrite import AIRewriteService
 from app.services.anti_abuse import AntiAbuseAssessment, AntiAbuseConfig, AntiAbuseService
 from app.services.auth import AuthService
@@ -26,8 +31,13 @@ from app.services.support_tickets import SupportTicketService
 from app.services.trust_scores import TrustScoreConfig, TrustScoreService
 
 __all__ = [
+    "AdminAnalyticsService",
+    "AdminAuditService",
+    "AdminIssueService",
     "AdminIntegrityService",
     "AdminModerationService",
+    "AdminTicketService",
+    "AdminUserService",
     "AIRewriteService",
     "AIServiceError",
     "AntiAbuseAssessment",

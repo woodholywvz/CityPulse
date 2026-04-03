@@ -4,6 +4,7 @@ export const appCopy = {
     publicHome: "Home",
     publicList: "Issue list",
     publicMap: "Issue map",
+    publicHeatmap: "Heatmap",
     discover: "Discover",
     create: "Report issue",
     myIssues: "My issues",

@@ -4,7 +4,7 @@ import type { Route } from "next";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { Compass, ListFilter, Map, Shield, Sparkles } from "lucide-react";
+import { Compass, ListFilter, Map, Radar, Shield, Sparkles } from "lucide-react";
 
 import { AuthStatus } from "@/components/auth/auth-status";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
@@ -29,6 +29,11 @@ export function PublicHeader({ locale }: PublicHeaderProps) {
       href: `/${locale}/issues/map` as Route,
       label: appCopy.header.publicMap,
       icon: Map,
+    },
+    {
+      href: `/${locale}/issues/heatmap` as Route,
+      label: appCopy.header.publicHeatmap,
+      icon: Radar,
     },
     {
       href: `/${locale}/discover` as Route,

@@ -1,8 +1,25 @@
 import { siteConfig } from "@/lib/site";
 import type {
+  AdminActivityTrendPoint,
+  AdminDashboard,
+  AdminDistributionItem,
+  AdminHeatPoint,
+  AdminIssueActionInput,
+  AdminIssueDetail,
+  AdminIssueDuplicateLinkInput,
+  AdminIssueSummary,
+  AdminSupportTrendPoint,
+  AdminTicketDetail,
+  AdminTicketListItem,
+  AdminTicketReplyInput,
+  AdminTicketStatusInput,
+  AdminTopArea,
+  AdminUserActionInput,
+  AdminUserProfile,
   AdminModerationIssue,
   UserIntegrityDetail,
   UserIntegritySummary,
+  AnalyticsGranularity,
   ApiErrorPayload,
   AuthTokenResponse,
   DuplicateSuggestionResponse,
@@ -14,6 +31,7 @@ import type {
   IssueModerationAudit,
   IssuePublicImpact,
   PublicIssueDetail,
+  PublicHeatPoint,
   PublicIssueMapMarker,
   PublicIssueSort,
   PublicIssueSummary,
@@ -178,6 +196,19 @@ export const apiClient = {
     return request<PublicIssueMapMarker[]>("/api/public/issues/map", {}, params);
   },
 
+  async listPublicHeatmap(input: {
+    categoryId?: string | null;
+    days?: number;
+    limit?: number;
+  }) {
+    const params = new URLSearchParams();
+    if (input.categoryId) params.set("category_id", input.categoryId);
+    if (input.days) params.set("days", String(input.days));
+    if (input.limit) params.set("limit", String(input.limit));
+
+    return request<PublicHeatPoint[]>("/api/public/issues/heatmap", {}, params);
+  },
+
   async getPublicIssue(issueId: string) {
     return request<PublicIssueDetail>(`/api/public/issues/${issueId}`);
   },
@@ -266,6 +297,211 @@ export const apiClient = {
     return request<UserIntegrityDetail>(`/api/admin/users/${userId}/integrity`, {
       token,
     });
+  },
+
+  async getAdminDashboard(token: string) {
+    return request<AdminDashboard>("/api/admin/dashboard", { token });
+  },
+
+  async listAdminIssues(
+    token: string,
+    input: {
+      limit?: number;
+      status?: string | null;
+      moderationState?: string | null;
+      categoryId?: string | null;
+      authorId?: string | null;
+    } = {},
+  ) {
+    const params = new URLSearchParams();
+    if (input.limit) params.set("limit", String(input.limit));
+    if (input.status) params.set("status", input.status);
+    if (input.moderationState) params.set("moderation_state", input.moderationState);
+    if (input.categoryId) params.set("category_id", input.categoryId);
+    if (input.authorId) params.set("author_id", input.authorId);
+
+    return request<AdminIssueSummary[]>("/api/admin/issues", { token }, params);
+  },
+
+  async getAdminIssueDetail(token: string, issueId: string) {
+    return request<AdminIssueDetail>(`/api/admin/issues/${issueId}`, { token });
+  },
+
+  async applyAdminIssueAction(
+    token: string,
+    issueId: string,
+    input: AdminIssueActionInput,
+  ) {
+    return request<AdminIssueDetail>(`/api/admin/issues/${issueId}/actions`, {
+      method: "POST",
+      token,
+      body: JSON.stringify(input),
+    });
+  },
+
+  async linkAdminIssueDuplicate(
+    token: string,
+    issueId: string,
+    input: AdminIssueDuplicateLinkInput,
+  ) {
+    return request<AdminIssueDetail>(`/api/admin/issues/${issueId}/duplicates/link`, {
+      method: "POST",
+      token,
+      body: JSON.stringify(input),
+    });
+  },
+
+  async listAdminTickets(
+    token: string,
+    input: {
+      limit?: number;
+      status?: string | null;
+      ticketType?: string | null;
+    } = {},
+  ) {
+    const params = new URLSearchParams();
+    if (input.limit) params.set("limit", String(input.limit));
+    if (input.status) params.set("status", input.status);
+    if (input.ticketType) params.set("ticket_type", input.ticketType);
+
+    return request<AdminTicketListItem[]>("/api/admin/tickets", { token }, params);
+  },
+
+  async getAdminTicketDetail(token: string, ticketId: string) {
+    return request<AdminTicketDetail>(`/api/admin/tickets/${ticketId}`, { token });
+  },
+
+  async replyAdminTicket(
+    token: string,
+    ticketId: string,
+    input: AdminTicketReplyInput,
+  ) {
+    return request<AdminTicketDetail>(`/api/admin/tickets/${ticketId}/reply`, {
+      method: "POST",
+      token,
+      body: JSON.stringify(input),
+    });
+  },
+
+  async updateAdminTicketStatus(
+    token: string,
+    ticketId: string,
+    input: AdminTicketStatusInput,
+  ) {
+    return request<AdminTicketDetail>(`/api/admin/tickets/${ticketId}/status`, {
+      method: "POST",
+      token,
+      body: JSON.stringify(input),
+    });
+  },
+
+  async getAdminUserProfile(token: string, userId: string) {
+    return request<AdminUserProfile>(`/api/admin/users/${userId}`, { token });
+  },
+
+  async banAdminUser(token: string, userId: string, input: AdminUserActionInput) {
+    return request<AdminUserProfile>(`/api/admin/users/${userId}/ban`, {
+      method: "POST",
+      token,
+      body: JSON.stringify(input),
+    });
+  },
+
+  async unbanAdminUser(token: string, userId: string, input: AdminUserActionInput) {
+    return request<AdminUserProfile>(`/api/admin/users/${userId}/unban`, {
+      method: "POST",
+      token,
+      body: JSON.stringify(input),
+    });
+  },
+
+  async getAdminActivityTrends(
+    token: string,
+    input: { granularity?: AnalyticsGranularity; periods?: number } = {},
+  ) {
+    const params = new URLSearchParams();
+    if (input.granularity) params.set("granularity", input.granularity);
+    if (input.periods) params.set("periods", String(input.periods));
+
+    return request<AdminActivityTrendPoint[]>("/api/admin/analytics/trends", { token }, params);
+  },
+
+  async getAdminCategoryDistribution(token: string) {
+    return request<AdminDistributionItem[]>("/api/admin/analytics/category-distribution", {
+      token,
+    });
+  },
+
+  async getAdminModerationOutcomes(token: string) {
+    return request<AdminDistributionItem[]>("/api/admin/analytics/moderation-outcomes", {
+      token,
+    });
+  },
+
+  async getAdminTrustDistribution(token: string) {
+    return request<AdminDistributionItem[]>("/api/admin/analytics/trust-distribution", {
+      token,
+    });
+  },
+
+  async getAdminAbuseIncidents(token: string, days = 90) {
+    const params = new URLSearchParams({ days: String(days) });
+    return request<AdminDistributionItem[]>("/api/admin/analytics/abuse-incidents", {
+      token,
+    }, params);
+  },
+
+  async getAdminSupportTrends(
+    token: string,
+    input: { granularity?: AnalyticsGranularity; periods?: number } = {},
+  ) {
+    const params = new URLSearchParams();
+    if (input.granularity) params.set("granularity", input.granularity);
+    if (input.periods) params.set("periods", String(input.periods));
+
+    return request<AdminSupportTrendPoint[]>(
+      "/api/admin/analytics/support-trends",
+      { token },
+      params,
+    );
+  },
+
+  async getAdminTopAreas(token: string, limit = 12) {
+    const params = new URLSearchParams({ limit: String(limit) });
+    return request<AdminTopArea[]>("/api/admin/analytics/top-areas", { token }, params);
+  },
+
+  async getAdminDuplicateConcentration(token: string, limit = 12) {
+    const params = new URLSearchParams({ limit: String(limit) });
+    return request<AdminDistributionItem[]>(
+      "/api/admin/analytics/duplicate-concentration",
+      { token },
+      params,
+    );
+  },
+
+  async getAdminHeatmap(
+    token: string,
+    input: {
+      categoryId?: string | null;
+      status?: string | null;
+      moderationState?: string | null;
+      days?: number;
+      minimumPublicScore?: number;
+      limit?: number;
+    } = {},
+  ) {
+    const params = new URLSearchParams();
+    if (input.categoryId) params.set("category_id", input.categoryId);
+    if (input.status) params.set("status", input.status);
+    if (input.moderationState) params.set("moderation_state", input.moderationState);
+    if (input.days) params.set("days", String(input.days));
+    if (typeof input.minimumPublicScore === "number") {
+      params.set("minimum_public_score", String(input.minimumPublicScore));
+    }
+    if (input.limit) params.set("limit", String(input.limit));
+
+    return request<AdminHeatPoint[]>("/api/admin/analytics/heatmap", { token }, params);
   },
 
   async recalculateAdminUserIntegrity(token: string, userId: string) {

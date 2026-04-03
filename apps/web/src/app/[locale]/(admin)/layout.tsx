@@ -1,5 +1,4 @@
-import { PanelShell } from "@/components/layout/panel-shell";
-import { appCopy } from "@/content/copy";
+import { AdminShell } from "@/components/layout/admin-shell";
 
 export default async function AdminLayout({
   children,
@@ -10,15 +9,5 @@ export default async function AdminLayout({
 }>) {
   const { locale } = await params;
 
-  return (
-    <PanelShell
-      locale={locale}
-      sectionLabel={appCopy.panelShell.adminSectionLabel}
-      title={appCopy.panelShell.adminTitle}
-      description={appCopy.panelShell.adminDescription}
-      tone="dark"
-    >
-      {children}
-    </PanelShell>
-  );
+  return <AdminShell locale={locale}>{children}</AdminShell>;
 }

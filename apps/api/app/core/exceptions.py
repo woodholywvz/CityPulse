@@ -64,6 +64,21 @@ class ConflictError(AppError):
         )
 
 
+class ValidationError(AppError):
+    def __init__(
+        self,
+        message: str = "Request validation failed.",
+        *,
+        details: Any | None = None,
+    ) -> None:
+        super().__init__(
+            message,
+            code="validation_error",
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            details=details,
+        )
+
+
 class TooManyRequestsError(AppError):
     def __init__(
         self,

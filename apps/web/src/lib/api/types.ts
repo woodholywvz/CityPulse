@@ -377,3 +377,337 @@ export type SupportTicket = {
   created_at: string;
   updated_at: string;
 };
+
+export type AnalyticsGranularity = "day" | "week" | "month";
+
+export type AdminDistributionItem = {
+  key: string;
+  label: string;
+  count: number;
+  share: number;
+  numeric_value: number | null;
+};
+
+export type AdminActivityTrendPoint = {
+  bucket_start: string;
+  label: string;
+  issue_submissions: number;
+  support_actions: number;
+  tickets_created: number;
+};
+
+export type AdminSupportTrendPoint = {
+  bucket_start: string;
+  label: string;
+  support: number;
+  skip: number;
+  more_like_this: number;
+  less_like_this: number;
+};
+
+export type AdminImpactDistributionBucket = {
+  range_key: string;
+  min_score: number;
+  max_score: number;
+  count: number;
+};
+
+export type AdminHeatPoint = {
+  area_key: string;
+  label: string;
+  latitude: number;
+  longitude: number;
+  intensity: number;
+  issue_count: number;
+  trust_weighted_activity: number;
+  duplicate_count: number;
+  needs_review_count: number;
+  published_count: number;
+  top_category_slug: string | null;
+  average_impact_score: number | null;
+};
+
+export type PublicHeatPoint = {
+  area_key: string;
+  label: string;
+  latitude: number;
+  longitude: number;
+  intensity: number;
+  issue_count: number;
+  top_category_slug: string | null;
+};
+
+export type AdminTopArea = {
+  area_key: string;
+  label: string;
+  issue_count: number;
+  total_impact_score: number;
+  average_impact_score: number;
+  latitude: number;
+  longitude: number;
+  dominant_category_slug: string | null;
+};
+
+export type AdminIssueSummary = {
+  id: string;
+  title: string;
+  short_description: string;
+  status: IssueStatus;
+  moderation_state: ModerationState;
+  category: IssueCategory;
+  author: UserIntegrityCompact | null;
+  location_snippet: string;
+  support_count: number;
+  trust_weighted_support_total: number;
+  duplicate_count: number;
+  public_impact_score: number | null;
+  affected_people_estimate: number | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type AdminDashboardIssueVolume = {
+  total_issues: number;
+  new_last_7_days: number;
+  published_count: number;
+  pending_count: number;
+  archived_count: number;
+};
+
+export type AdminDashboardModeration = {
+  approved_count: number;
+  rejected_count: number;
+  needs_review_count: number;
+  queued_count: number;
+};
+
+export type AdminDashboardTrust = {
+  average_trust_score: number;
+  high_abuse_risk_users: number;
+  medium_abuse_risk_users: number;
+  banned_users: number;
+  sanctioned_users: number;
+};
+
+export type AdminDashboardTicketQueue = {
+  open_count: number;
+  under_review_count: number;
+  waiting_for_user_count: number;
+  resolved_count: number;
+  appeal_count: number;
+  bug_report_count: number;
+  improvement_count: number;
+};
+
+export type AdminDashboardReaction = {
+  support_count: number;
+  skip_count: number;
+  more_like_this_count: number;
+  less_like_this_count: number;
+};
+
+export type AdminTicketListItem = {
+  id: string;
+  issue_id: string | null;
+  author: AdminUserIdentity;
+  type: "appeal" | "bug_report" | "improvement";
+  status:
+    | "open"
+    | "under_review"
+    | "waiting_for_user"
+    | "resolved"
+    | "closed";
+  subject: string;
+  message_count: number;
+  latest_message_preview: string | null;
+  latest_message_at: string | null;
+  issue_title: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type AdminDashboard = {
+  issue_volume: AdminDashboardIssueVolume;
+  moderation_overview: AdminDashboardModeration;
+  impact_distribution: AdminImpactDistributionBucket[];
+  top_priority_issues: AdminIssueSummary[];
+  trust_overview: AdminDashboardTrust;
+  ticket_queue: AdminDashboardTicketQueue;
+  reaction_overview: AdminDashboardReaction;
+  activity_trends: AdminActivityTrendPoint[];
+  recent_tickets: AdminTicketListItem[];
+  recent_moderation: AdminModerationIssue[];
+  heatmap_preview: AdminHeatPoint[];
+};
+
+export type AdminDuplicateLink = {
+  id: string;
+  status:
+    | "possible"
+    | "confirmed"
+    | "rejected"
+    | "supported_existing";
+  canonical_issue_id: string;
+  duplicate_issue_id: string | null;
+  canonical_issue_title: string | null;
+  duplicate_issue_title: string | null;
+  similarity_score: number | null;
+  distance_km: number | null;
+  text_similarity: number | null;
+  category_match: boolean;
+  reason_breakdown: string[];
+  created_at: string;
+};
+
+export type AdminIssueSupportMetrics = {
+  support_count: number;
+  trust_weighted_support_total: number;
+  skip_count: number;
+  more_like_this_count: number;
+  less_like_this_count: number;
+};
+
+export type AdminActionLog = {
+  id: string;
+  action: string;
+  entity_type: string;
+  entity_id: string | null;
+  note: string | null;
+  payload: Record<string, unknown>;
+  created_at: string;
+  admin: AdminUserIdentity | null;
+};
+
+export type AdminIssueDetail = {
+  issue: AdminIssueSummary;
+  attachments: IssueAttachment[];
+  moderation_results: IssueModerationAdmin[];
+  impact: IssueImpactAdmin;
+  support_metrics: AdminIssueSupportMetrics;
+  canonical_duplicates: AdminDuplicateLink[];
+  duplicate_of: AdminDuplicateLink[];
+  admin_actions: AdminActionLog[];
+};
+
+export type AdminIssueActionKind =
+  | "approve"
+  | "reject"
+  | "publish"
+  | "archive"
+  | "reopen";
+
+export type AdminIssueActionInput = {
+  action: AdminIssueActionKind;
+  note?: string | null;
+  bypass_ai?: boolean;
+};
+
+export type AdminIssueDuplicateLinkInput = {
+  canonical_issue_id: string;
+  note?: string | null;
+  archive_duplicate?: boolean;
+  similarity_score?: number | null;
+  distance_km?: number | null;
+  text_similarity?: number | null;
+  category_match?: boolean;
+  reason_breakdown?: string[];
+};
+
+export type AdminTicketMessage = {
+  id: string;
+  ticket_id: string;
+  author_id: string;
+  author_name: string;
+  author_role: UserRole;
+  body: string;
+  is_internal: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type AdminTicketDetail = {
+  id: string;
+  issue_id: string | null;
+  author: AdminUserIdentity;
+  type: "appeal" | "bug_report" | "improvement";
+  status:
+    | "open"
+    | "under_review"
+    | "waiting_for_user"
+    | "resolved"
+    | "closed";
+  subject: string;
+  issue_title: string | null;
+  issue_status: IssueStatus | null;
+  latest_moderation_code: string | null;
+  messages: AdminTicketMessage[];
+  created_at: string;
+  updated_at: string;
+};
+
+export type AdminTicketReplyInput = {
+  body: string;
+  is_internal?: boolean;
+  status?:
+    | "open"
+    | "under_review"
+    | "waiting_for_user"
+    | "resolved"
+    | "closed"
+    | null;
+};
+
+export type AdminTicketStatusInput = {
+  status: "open" | "under_review" | "waiting_for_user" | "resolved" | "closed";
+  note?: string | null;
+};
+
+export type AdminUserIssueHistory = {
+  id: string;
+  title: string;
+  status: IssueStatus;
+  moderation_state: ModerationState;
+  public_impact_score: number | null;
+  created_at: string;
+};
+
+export type AdminUserTicketHistory = {
+  id: string;
+  subject: string;
+  type: "appeal" | "bug_report" | "improvement";
+  status: "open" | "under_review" | "waiting_for_user" | "resolved" | "closed";
+  issue_id: string | null;
+  created_at: string;
+};
+
+export type AdminUserModerationHistory = {
+  issue_id: string;
+  issue_title: string;
+  layer: string;
+  status: string;
+  decision_code: string;
+  created_at: string;
+};
+
+export type AdminUserReactionPattern = {
+  action: SwipeAction;
+  count: number;
+};
+
+export type AdminUserProfile = {
+  identity: AdminUserIdentity;
+  integrity: UserIntegrityCompact | null;
+  recent_events: IntegrityEvent[];
+  trust_factors: IntegrityFactor[];
+  abuse_factors: IntegrityFactor[];
+  recommended_actions: string[];
+  metrics: Record<string, unknown>;
+  recent_issues: AdminUserIssueHistory[];
+  recent_tickets: AdminUserTicketHistory[];
+  moderation_history: AdminUserModerationHistory[];
+  reaction_patterns: AdminUserReactionPattern[];
+};
+
+export type AdminUserActionInput = {
+  note?: string | null;
+};

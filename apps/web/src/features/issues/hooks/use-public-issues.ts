@@ -4,6 +4,7 @@ import { apiClient } from "@/lib/api/client";
 import type {
   IssueCategory,
   PublicIssueDetail,
+  PublicHeatPoint,
   PublicIssueMapMarker,
   PublicIssueSort,
   PublicIssueSummary,
@@ -71,6 +72,18 @@ export function useMapIssues(
       input.limit ?? 80,
     ],
     load: () => apiClient.listMapIssues(input),
+  });
+}
+
+export function usePublicHeatmap(input: {
+  categoryId?: string | null;
+  days?: number;
+  limit?: number;
+}) {
+  return useAsyncResource<PublicHeatPoint[]>({
+    initialValue: [],
+    deps: [input.categoryId ?? "", input.days ?? 180, input.limit ?? 120],
+    load: () => apiClient.listPublicHeatmap(input),
   });
 }
 
