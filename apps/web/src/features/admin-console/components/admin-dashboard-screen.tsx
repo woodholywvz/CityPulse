@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { InlineMessage } from "@/components/ui/inline-message";
 import { PageLoading } from "@/components/ui/page-loading";
-import { adminConsoleCopy } from "@/content/admin-console";
 import {
   DistributionList,
   SimpleBarChart,
@@ -33,12 +32,14 @@ import {
 } from "@/features/admin-console/lib/presenters";
 import { IssueHeatmapMap } from "@/features/issues/components/issue-heatmap-map";
 import { useAuth } from "@/lib/auth/auth-provider";
+import { useAdminCopy } from "@/lib/i18n-provider";
 
 type AdminDashboardScreenProps = Readonly<{
   locale: string;
 }>;
 
 export function AdminDashboardScreen({ locale }: AdminDashboardScreenProps) {
+  const adminConsoleCopy = useAdminCopy();
   const { token, user } = useAuth();
   const isAdmin = user?.role === "admin";
   const dashboard = useAdminDashboard(token, Boolean(isAdmin));
@@ -243,7 +244,7 @@ export function AdminDashboardScreen({ locale }: AdminDashboardScreenProps) {
             />
           </div>
 
-          <div className="mt-6 grid gap-6 lg:grid-cols-3">
+          <div className="mt-6 grid gap-6 xl:grid-cols-2">
             <div>
               <p className="mb-4 text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">
                 {adminConsoleCopy.dashboard.charts.moderationTitle}
@@ -315,16 +316,16 @@ export function AdminDashboardScreen({ locale }: AdminDashboardScreenProps) {
                   topAreas.data.map((area) => (
                     <article
                       key={area.area_key}
-                      className="rounded-[1.25rem] border border-white/10 bg-white/5 p-4"
+                      className="min-w-0 rounded-[1.25rem] border border-white/10 bg-white/5 p-4"
                     >
-                      <div className="flex items-center justify-between gap-3">
-                        <p className="font-semibold text-white">{area.label}</p>
+                      <div className="flex flex-col items-start gap-3">
+                        <p className="break-words font-semibold text-white">{area.label}</p>
                         <AdminStatusBadge
                           label={area.dominant_category_slug ?? adminConsoleCopy.common.noData}
                           tone="subtle"
                         />
                       </div>
-                      <div className="mt-3 flex flex-wrap gap-3 text-xs uppercase tracking-[0.18em] text-slate-400">
+                      <div className="mt-3 flex flex-wrap gap-x-3 gap-y-2 text-xs uppercase tracking-[0.18em] text-slate-400">
                         <span>{formatCompactNumber(area.issue_count)}</span>
                         <span>{area.average_impact_score.toFixed(1)}/10</span>
                         <span>{area.total_impact_score.toFixed(1)}</span>
@@ -387,7 +388,7 @@ export function AdminDashboardScreen({ locale }: AdminDashboardScreenProps) {
               <Link
                 key={issue.id}
                 href={`/${locale}/admin/issues/${issue.id}` as Route}
-                className="rounded-[1.4rem] border border-white/10 bg-white/5 p-4 transition-colors hover:bg-white/8"
+                className="min-w-0 rounded-[1.4rem] border border-white/10 bg-white/5 p-4 transition-colors hover:bg-white/8"
               >
                 <div className="flex flex-wrap items-center gap-2">
                   <AdminStatusBadge
@@ -406,7 +407,7 @@ export function AdminDashboardScreen({ locale }: AdminDashboardScreenProps) {
                   {issue.short_description}
                 </p>
                 <AdminKeyValueGrid
-                  columns={4}
+                  columns={2}
                   items={[
                     {
                       label: adminConsoleCopy.heatmap.issueCount,

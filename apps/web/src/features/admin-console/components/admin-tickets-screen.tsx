@@ -10,7 +10,6 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { InlineMessage } from "@/components/ui/inline-message";
 import { PageLoading } from "@/components/ui/page-loading";
 import { Select } from "@/components/ui/select";
-import { adminConsoleCopy } from "@/content/admin-console";
 import {
   AdminMetricCard,
   AdminSectionHeader,
@@ -25,6 +24,7 @@ import {
   formatStatusTone,
 } from "@/features/admin-console/lib/presenters";
 import { useAuth } from "@/lib/auth/auth-provider";
+import { useAdminCopy } from "@/lib/i18n-provider";
 
 type AdminTicketsScreenProps = Readonly<{
   locale: string;
@@ -48,6 +48,7 @@ const TICKET_TYPE_VALUES = TICKET_TYPE_OPTIONS.filter(
 );
 
 export function AdminTicketsScreen({ locale }: AdminTicketsScreenProps) {
+  const adminConsoleCopy = useAdminCopy();
   const { token, user } = useAuth();
   const isAdmin = user?.role === "admin";
   const [status, setStatus] = useState("");

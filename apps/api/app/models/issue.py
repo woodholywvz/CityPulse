@@ -3,10 +3,11 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from uuid import UUID
 
-from sqlalchemy import Enum, Float, ForeignKey, Index, String, Text, Uuid
+from sqlalchemy import Float, ForeignKey, Index, String, Text, Uuid
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, TimestampMixin, UUIDPrimaryKeyMixin
+from app.models.enum_types import enum_values_type
 from app.models.enums import IssueStatus, ModerationLayer, ModerationState
 
 if TYPE_CHECKING:
@@ -45,13 +46,13 @@ class Issue(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     latitude: Mapped[float] = mapped_column(Float, nullable=False)
     longitude: Mapped[float] = mapped_column(Float, nullable=False)
     status: Mapped[IssueStatus] = mapped_column(
-        Enum(IssueStatus, name="issue_status", native_enum=False),
+        enum_values_type(IssueStatus, name="issue_status"),
         default=IssueStatus.PENDING_MODERATION,
         index=True,
         nullable=False,
     )
     moderation_state: Mapped[ModerationState] = mapped_column(
-        Enum(ModerationState, name="moderation_state", native_enum=False),
+        enum_values_type(ModerationState, name="moderation_state"),
         default=ModerationState.QUEUED,
         nullable=False,
     )

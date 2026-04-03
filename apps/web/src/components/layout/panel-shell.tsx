@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
-import { appCopy } from "@/content/copy";
+import { getAppCopy } from "@/lib/i18n";
 
 type PanelShellProps = Readonly<{
   children: React.ReactNode;
@@ -21,6 +21,7 @@ export function PanelShell({
   tone = "light",
 }: PanelShellProps) {
   const isDark = tone === "dark";
+  const appCopy = getAppCopy(locale);
 
   return (
     <main

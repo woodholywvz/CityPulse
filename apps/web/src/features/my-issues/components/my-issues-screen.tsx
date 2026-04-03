@@ -11,7 +11,6 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { InlineMessage } from "@/components/ui/inline-message";
 import { PageLoading } from "@/components/ui/page-loading";
-import { appCopy } from "@/content/copy";
 import { useMyIssues } from "@/features/my-issues/hooks/use-my-issues";
 import {
   formatCompactNumber,
@@ -22,12 +21,14 @@ import {
   getIssueLocationSnippet,
 } from "@/features/issues/lib/presenters";
 import { useAuth } from "@/lib/auth/auth-provider";
+import { useAppCopy } from "@/lib/i18n-provider";
 
 type MyIssuesScreenProps = Readonly<{
   locale: string;
 }>;
 
 export function MyIssuesScreen({ locale }: MyIssuesScreenProps) {
+  const appCopy = useAppCopy();
   const { token, user } = useAuth();
   const issues = useMyIssues(token);
 

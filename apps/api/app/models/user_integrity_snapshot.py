@@ -3,10 +3,11 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 from uuid import UUID
 
-from sqlalchemy import JSON, Enum, Float, ForeignKey, Index, Integer, Uuid
+from sqlalchemy import JSON, Float, ForeignKey, Index, Integer, Uuid
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, TimestampMixin, UUIDPrimaryKeyMixin
+from app.models.enum_types import enum_values_type
 from app.models.enums import AbuseRiskLevel
 
 if TYPE_CHECKING:
@@ -30,7 +31,7 @@ class UserIntegritySnapshot(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     trust_score: Mapped[float] = mapped_column(Float, nullable=False, default=55.0)
     trust_weight_multiplier: Mapped[float] = mapped_column(Float, nullable=False, default=0.95)
     abuse_risk_level: Mapped[AbuseRiskLevel] = mapped_column(
-        Enum(AbuseRiskLevel, name="abuse_risk_level", native_enum=False),
+        enum_values_type(AbuseRiskLevel, name="abuse_risk_level"),
         default=AbuseRiskLevel.LOW,
         nullable=False,
     )

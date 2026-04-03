@@ -29,6 +29,7 @@ export type SwipeAction =
   | "less_like_this";
 
 export type PublicIssueSort = "top" | "recent" | "nearby";
+export type PublicIssueStatus = Extract<IssueStatus, "published" | "archived">;
 export type DuplicateLookupStatus =
   | "no_match"
   | "possible_duplicates"

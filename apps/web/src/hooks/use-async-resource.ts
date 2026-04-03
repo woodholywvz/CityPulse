@@ -3,6 +3,8 @@
 import type { DependencyList } from "react";
 import { useEffect, useRef, useState } from "react";
 
+import { reportClientEvent } from "@/lib/observability";
+
 type AsyncResourceOptions<T> = {
   initialValue: T;
   enabled?: boolean;
@@ -51,6 +53,13 @@ export function useAsyncResource<T>({
         }
         const message =
           loadError instanceof Error ? loadError.message : "Unable to load data.";
+        reportClientEvent({
+          name: "async_resource_load_failed",
+          error: loadError,
+          context: {
+            dependency_key: depsKey,
+          },
+        });
         setError(message);
       } finally {
         if (isActive) {

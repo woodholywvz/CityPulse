@@ -24,6 +24,7 @@ from app.schemas.issue import (
     PublicIssueMapMarkerRead,
     PublicIssueSummaryRead,
 )
+from app.scripts.category_seed import seed_categories_in_session
 from app.services.ai_rewrite import AIRewriteService
 from app.services.anti_abuse import AntiAbuseService
 from app.services.duplicate_detection import DuplicateDetectionService
@@ -35,6 +36,7 @@ from app.services.trust_scores import TrustScoreService
 @dataclass(slots=True)
 class PublicIssueQuery:
     sort: str = "recent"
+    status: IssueStatus = IssueStatus.PUBLISHED
     category_id: UUID | None = None
     latitude: float | None = None
     longitude: float | None = None
@@ -58,7 +60,17 @@ class PublicIssueService:
             .where(IssueCategory.is_active.is_(True))
             .order_by(IssueCategory.display_name.asc())
         )
-        return [IssueCategoryRead.model_validate(category) for category in categories.all()]
+        items = categories.all()
+        if not items:
+            await seed_categories_in_session(self.session)
+            await self.session.commit()
+            categories = await self.session.scalars(
+                select(IssueCategory)
+                .where(IssueCategory.is_active.is_(True))
+                .order_by(IssueCategory.display_name.asc())
+            )
+            items = categories.all()
+        return [IssueCategoryRead.model_validate(category) for category in items]
 
     async def list_public_issues(
         self,
@@ -89,7 +101,10 @@ class PublicIssueService:
     async def get_public_issue(self, issue_id: UUID) -> PublicIssueDetailRead:
         issue = await self.session.scalar(
             select(Issue)
-            .where(Issue.id == issue_id, Issue.status == IssueStatus.PUBLISHED)
+            .where(
+                Issue.id == issue_id,
+                Issue.status.in_((IssueStatus.PUBLISHED, IssueStatus.ARCHIVED)),
+            )
             .options(
                 selectinload(Issue.category),
                 selectinload(Issue.attachments),
@@ -235,7 +250,7 @@ class PublicIssueService:
     async def _load_public_issues(self, query: PublicIssueQuery) -> list[Issue]:
         statement = (
             select(Issue)
-            .where(Issue.status == IssueStatus.PUBLISHED)
+            .where(Issue.status == query.status)
             .options(
                 selectinload(Issue.category),
                 selectinload(Issue.attachments),
@@ -408,6 +423,12 @@ class PublicIssueService:
             return None
 
         first_attachment = issue.attachments[0]
+        if first_attachment.moderation_image_url:
+            return first_attachment.moderation_image_url
+
+        if first_attachment.storage_key.startswith(("http://", "https://")):
+            return first_attachment.storage_key
+
         if not self.settings.s3_endpoint_url:
             return None
 

@@ -7,9 +7,8 @@ services:
       - "3000:3000"
     environment:
       NEXT_PUBLIC_APP_NAME: CityPulse
-      NEXT_PUBLIC_API_BASE_URL: http://localhost:8000
       NEXT_PUBLIC_DEFAULT_LOCALE: en
-      NEXT_PUBLIC_SUPPORTED_LOCALES: en,es
+      NEXT_PUBLIC_SUPPORTED_LOCALES: en,ru,kk-cyrl,kk-latn
     depends_on:
       backend:
         condition: service_started
@@ -25,7 +24,7 @@ services:
       ENVIRONMENT: local
       APP_VERSION: 0.1.0
       API_V1_PREFIX: /api
-      ALLOWED_ORIGINS: http://localhost:3000
+      ALLOWED_ORIGINS: http://localhost:3000,http://127.0.0.1:3000,http://0.0.0.0:3000
       DATABASE_URL: postgresql+asyncpg://citypulse:citypulse@postgres:5432/citypulse
       REDIS_URL: redis://redis:6379/0
       JWT_SECRET_KEY: change-me-in-production-please-rotate
@@ -33,6 +32,7 @@ services:
       ACCESS_TOKEN_EXPIRE_MINUTES: 60
       S3_REGION: us-east-1
       S3_BUCKET: citypulse-local
+      SEED_DEMO_DATA: "true"
     depends_on:
       postgres:
         condition: service_healthy

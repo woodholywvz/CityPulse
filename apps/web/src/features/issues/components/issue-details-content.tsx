@@ -1,4 +1,4 @@
-/* eslint-disable @next/next/no-img-element */
+"use client";
 
 import type { Route } from "next";
 import Link from "next/link";
@@ -7,8 +7,7 @@ import { CalendarClock, Languages, MapPin, Paperclip, Sparkles } from "lucide-re
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { appCopy } from "@/content/copy";
-import type { PublicIssueDetail } from "@/lib/api/types";
+import { ResponsiveImage } from "@/components/ui/responsive-image";
 import {
   formatAffectedPeopleEstimate,
   formatCompactNumber,
@@ -18,6 +17,8 @@ import {
   getIssueLocationSnippet,
   getIssueSignalLabel,
 } from "@/features/issues/lib/presenters";
+import { useAppCopy } from "@/lib/i18n-provider";
+import type { PublicIssueDetail } from "@/lib/api/types";
 
 type IssueDetailsContentProps = Readonly<{
   issue: PublicIssueDetail;
@@ -32,13 +33,19 @@ export function IssueDetailsContent({
   onSupport,
   isSupporting = false,
 }: IssueDetailsContentProps) {
+  const appCopy = useAppCopy();
   const signalLabel = getIssueSignalLabel(issue);
 
   return (
     <div className="space-y-6">
       <div className="overflow-hidden rounded-[1.5rem] border border-border/70 bg-muted/60">
         {issue.cover_image_url ? (
-          <img src={issue.cover_image_url} alt={issue.title} className="h-56 w-full object-cover" />
+          <ResponsiveImage
+            src={issue.cover_image_url}
+            alt={issue.title}
+            className="relative h-56 w-full"
+            sizes="(max-width: 768px) 100vw, 620px"
+          />
         ) : (
           <div className="flex h-56 flex-col justify-between bg-gradient-to-br from-secondary via-card to-accent/60 p-6">
             <Badge variant="primary">{issue.category.display_name}</Badge>
@@ -83,7 +90,7 @@ export function IssueDetailsContent({
           <div>
             <p className="text-sm font-semibold">{appCopy.issueDetail.scoreTitle}</p>
             <p className="mt-1 text-sm text-muted-foreground">
-              {formatImpactScore(issue.public_impact_score)} · {signalLabel}
+              {formatImpactScore(issue.public_impact_score)} {appCopy.common.separator} {signalLabel}
             </p>
             <p className="mt-1 text-sm text-muted-foreground">
               {formatAffectedPeopleEstimate(issue.affected_people_estimate)}
@@ -125,7 +132,7 @@ export function IssueDetailsContent({
               >
                 <p className="font-semibold text-foreground">{attachment.original_filename}</p>
                 <p className="mt-1">
-                  {attachment.content_type} · {Math.round(attachment.size_bytes / 1024)} KB
+                  {attachment.content_type} {appCopy.common.separator} {Math.round(attachment.size_bytes / 1024)} {appCopy.common.kilobytes}
                 </p>
               </div>
             ))

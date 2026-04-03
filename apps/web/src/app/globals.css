@@ -26,18 +26,18 @@
 .dark {
   --background: 218 37% 8%;
   --foreground: 210 20% 96%;
-  --card: 220 26% 12%;
+  --card: 220 24% 13%;
   --card-foreground: 210 20% 96%;
   --primary: 19 90% 61%;
   --primary-foreground: 221 39% 11%;
-  --secondary: 217 24% 18%;
+  --secondary: 217 24% 16%;
   --secondary-foreground: 210 20% 96%;
-  --muted: 219 19% 16%;
-  --muted-foreground: 215 12% 71%;
-  --accent: 186 25% 19%;
+  --muted: 219 19% 15%;
+  --muted-foreground: 215 14% 75%;
+  --accent: 186 25% 18%;
   --accent-foreground: 182 56% 83%;
-  --border: 217 18% 23%;
-  --input: 217 18% 23%;
+  --border: 217 18% 24%;
+  --input: 217 18% 24%;
   --ring: 19 90% 61%;
   --surface-strong: 218 34% 11%;
   --surface-elevated: 220 27% 14%;
@@ -71,6 +71,19 @@ a {
   @apply transition-colors;
 }
 
+:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 3px;
+}
+
+html {
+  color-scheme: light;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
 .leaflet-container {
   @apply rounded-[1.5rem] border border-border bg-card;
   font: inherit;
@@ -80,7 +93,33 @@ a {
   @apply hidden;
 }
 
+select,
+option {
+  color: hsl(var(--foreground));
+  background-color: hsl(var(--card));
+}
+
+.dark select,
+.dark option {
+  color: hsl(var(--foreground));
+  background-color: hsl(var(--surface-elevated));
+}
+
 ::selection {
   background: hsl(var(--primary));
   color: hsl(var(--primary-foreground));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

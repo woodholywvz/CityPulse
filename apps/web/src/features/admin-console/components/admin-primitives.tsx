@@ -102,20 +102,24 @@ export function AdminKeyValueGrid({
 }: AdminKeyValueGridProps) {
   const gridClassName =
     columns === 4
-      ? "md:grid-cols-2 xl:grid-cols-4"
+      ? "sm:grid-cols-2 2xl:grid-cols-4"
       : columns === 3
-        ? "md:grid-cols-2 xl:grid-cols-3"
-        : "md:grid-cols-2";
+        ? "sm:grid-cols-2 2xl:grid-cols-3"
+        : "sm:grid-cols-2";
 
   return (
     <div className={cn("grid gap-3", gridClassName)}>
       {items.map((item) => (
         <div
           key={item.label}
-          className="rounded-[1.25rem] border border-white/10 bg-white/5 px-4 py-3"
+          className="min-w-0 rounded-[1.25rem] border border-white/10 bg-white/5 px-4 py-3"
         >
-          <p className="text-xs uppercase tracking-[0.2em] text-slate-400">{item.label}</p>
-          <div className="mt-2 text-sm text-slate-100">{item.value}</div>
+          <p className="break-words text-xs uppercase tracking-[0.2em] text-slate-400">
+            {item.label}
+          </p>
+          <div className="mt-2 break-words text-sm leading-6 text-slate-100">
+            {item.value}
+          </div>
         </div>
       ))}
     </div>

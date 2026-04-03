@@ -1,8 +1,8 @@
 from functools import lru_cache
-from typing import Literal
+from typing import Annotated, Literal
 
 from pydantic import Field, field_validator
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -17,7 +17,13 @@ class Settings(BaseSettings):
     environment: Literal["local", "development", "staging", "production"] = "local"
     app_version: str = "0.1.0"
     api_v1_prefix: str = "/api"
-    allowed_origins: list[str] = Field(default_factory=lambda: ["http://localhost:3000"])
+    allowed_origins: Annotated[list[str], NoDecode] = Field(
+        default_factory=lambda: [
+            "http://localhost:3000",
+            "http://127.0.0.1:3000",
+            "http://0.0.0.0:3000",
+        ]
+    )
     database_url: str = (
         "postgresql+asyncpg://citypulse:citypulse@localhost:5432/citypulse"
     )
@@ -36,9 +42,10 @@ class Settings(BaseSettings):
     s3_region: str = "us-east-1"
     s3_bucket: str = "citypulse-local"
     request_id_header: str = "X-Request-ID"
-    default_admin_email: str = "admin@citypulse.local"
+    default_admin_email: str = "admin@citypulse-demo.com"
     default_admin_password: str = "ChangeMe123!"
     default_admin_full_name: str = "CityPulse Admin"
+    seed_demo_data: bool = False
 
     @field_validator("allowed_origins", mode="before")
     @classmethod
@@ -46,6 +53,22 @@ class Settings(BaseSettings):
         if isinstance(value, str):
             return [origin.strip() for origin in value.split(",") if origin.strip()]
         return value
+
+    @property
+    def allowed_origin_regex(self) -> str | None:
+        if self.environment not in {"local", "development"}:
+            return None
+
+        return (
+            r"^https?://("
+            r"localhost|"
+            r"127\.0\.0\.1|"
+            r"0\.0\.0\.0|"
+            r"10\.\d+\.\d+\.\d+|"
+            r"192\.168\.\d+\.\d+|"
+            r"172\.(1[6-9]|2\d|3[0-1])\.\d+\.\d+"
+            r")(:\d+)?$"
+        )
 
 
 @lru_cache

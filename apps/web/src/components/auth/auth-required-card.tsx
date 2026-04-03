@@ -1,15 +1,19 @@
+"use client";
+
 import type { Route } from "next";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
-import { appCopy } from "@/content/copy";
+import { useAppCopy } from "@/lib/i18n-provider";
 
 type AuthRequiredCardProps = Readonly<{
   locale: string;
 }>;
 
 export function AuthRequiredCard({ locale }: AuthRequiredCardProps) {
+  const appCopy = useAppCopy();
+
   return (
     <EmptyState
       title={appCopy.auth.requiredTitle}

@@ -1,6 +1,5 @@
-import { PageLoading } from "@/components/ui/page-loading";
-import { appCopy } from "@/content/copy";
+import { LocalizedPageLoading } from "@/components/ui/localized-page-loading";
 
 export default function DiscoverLoading() {
-  return <PageLoading title={appCopy.discover.title} />;
+  return <LocalizedPageLoading kind="discover" />;
 }

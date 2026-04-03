@@ -5,13 +5,13 @@ import { useState } from "react";
 import { EmptyState } from "@/components/ui/empty-state";
 import { InlineMessage } from "@/components/ui/inline-message";
 import { Select } from "@/components/ui/select";
-import { publicIntelligenceCopy } from "@/content/public-intelligence";
 import { IssueHeatmapMap } from "@/features/issues/components/issue-heatmap-map";
 import {
   useIssueCategories,
   usePublicHeatmap,
 } from "@/features/issues/hooks/use-public-issues";
 import { useAuth } from "@/lib/auth/auth-provider";
+import { usePublicIntelligenceMessages } from "@/lib/i18n-provider";
 
 type PublicIssueHeatmapScreenProps = Readonly<{
   locale: string;
@@ -21,6 +21,7 @@ const RANGE_OPTIONS = [30, 90, 180] as const;
 
 export function PublicIssueHeatmapScreen({ locale }: PublicIssueHeatmapScreenProps) {
   void locale;
+  const publicIntelligenceCopy = usePublicIntelligenceMessages();
   const [selectedAreaKey, setSelectedAreaKey] = useState<string | null>(null);
   const [categoryId, setCategoryId] = useState("");
   const [days, setDays] = useState<number>(90);

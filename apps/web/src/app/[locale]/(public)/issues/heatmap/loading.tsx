@@ -1,6 +1,5 @@
-import { PageLoading } from "@/components/ui/page-loading";
-import { appCopy } from "@/content/copy";
+import { LocalizedPageLoading } from "@/components/ui/localized-page-loading";
 
 export default function PublicIssueHeatmapLoading() {
-  return <PageLoading title={appCopy.issueViews.loadingTitle} />;
+  return <LocalizedPageLoading kind="issues" />;
 }

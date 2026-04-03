@@ -3,10 +3,11 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 from uuid import UUID
 
-from sqlalchemy import JSON, Boolean, Enum, Float, ForeignKey, Index, String, Text, Uuid
+from sqlalchemy import JSON, Boolean, Float, ForeignKey, Index, String, Text, Uuid
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, TimestampMixin, UUIDPrimaryKeyMixin
+from app.models.enum_types import enum_values_type
 from app.models.enums import ModerationLayer, ModerationResultStatus
 
 if TYPE_CHECKING:
@@ -27,12 +28,12 @@ class ModerationResult(UUIDPrimaryKeyMixin, TimestampMixin, Base):
         nullable=False,
     )
     status: Mapped[ModerationResultStatus] = mapped_column(
-        Enum(ModerationResultStatus, name="moderation_result_status", native_enum=False),
+        enum_values_type(ModerationResultStatus, name="moderation_result_status"),
         default=ModerationResultStatus.QUEUED,
         nullable=False,
     )
     layer: Mapped[ModerationLayer] = mapped_column(
-        Enum(ModerationLayer, name="moderation_layer", native_enum=False),
+        enum_values_type(ModerationLayer, name="moderation_layer"),
         default=ModerationLayer.DETERMINISTIC,
         nullable=False,
     )

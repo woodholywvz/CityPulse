@@ -61,6 +61,7 @@ CityPulse is a production-oriented monorepo scaffold for a civic issue reporting
 1. From the repository root, run `docker compose up --build`.
 2. Open [http://localhost:3000](http://localhost:3000) for the frontend.
 3. Hit [http://localhost:8000/api/health](http://localhost:8000/api/health) for the backend health endpoint.
+4. Local Docker startup also seeds categories, the default admin account, and 30 demo issues around Almaty for the MVP walkthrough.
 
 ### Option 2: Native Development
 
@@ -80,6 +81,7 @@ CityPulse is a production-oriented monorepo scaffold for a civic issue reporting
 5. Run `alembic -c alembic.ini upgrade head` from `apps/api`.
 6. Run `python -m app.scripts.seed` from `apps/api`.
 7. Run `uvicorn app.main:app --reload --host 0.0.0.0 --port 8000` from `apps/api`.
+8. For temporary local admin promotion during the MVP phase, run `python -m app.scripts.promote_admin --email your-user@example.com` from `apps/api`.
 
 ## Default Routes
 

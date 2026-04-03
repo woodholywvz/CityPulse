@@ -11,6 +11,9 @@ Backend service for CityPulse built with FastAPI, SQLAlchemy, Alembic, and JWT a
 5. Run `python -m app.scripts.seed`.
 6. Start the API with `uvicorn app.main:app --reload`.
 
+Local Docker and seed flows can also populate 30 demo Almaty issues when `SEED_DEMO_DATA=true`.
+For temporary MVP admin access, run `python -m app.scripts.promote_admin --email your-user@example.com`.
+
 ## AI placeholder config
 
 - `OPENAI_MODEL` defaults to `gpt-5.4-mini` for future rewrite and moderation integrations.

@@ -4,44 +4,32 @@ import type { Route } from "next";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-import { ListFilter, RefreshCw } from "lucide-react";
+import { ListFilter } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { InlineMessage } from "@/components/ui/inline-message";
-import { appCopy } from "@/content/copy";
 import { SwipeDeck } from "@/features/discover/components/swipe-deck";
 import { IssueDetailsSheet } from "@/features/issues/components/issue-details-sheet";
-import { IssueFilters } from "@/features/issues/components/issue-filters";
-import {
-  useIssueCategories,
-  useSwipeFeed,
-} from "@/features/issues/hooks/use-public-issues";
-import { useUserLocation } from "@/hooks/use-user-location";
+import { useSwipeFeed } from "@/features/issues/hooks/use-public-issues";
 import { apiClient } from "@/lib/api/client";
 import { useAuth } from "@/lib/auth/auth-provider";
-import type { PublicIssueSort, PublicIssueSummary, SwipeAction } from "@/lib/api/types";
+import { useAppCopy } from "@/lib/i18n-provider";
+import type { PublicIssueSummary, SwipeAction } from "@/lib/api/types";
 
 type DiscoverScreenProps = Readonly<{
   locale: string;
 }>;
 
 export function DiscoverScreen({ locale }: DiscoverScreenProps) {
-  const [sort, setSort] = useState<PublicIssueSort>("top");
-  const [categoryId, setCategoryId] = useState<string | null>(null);
+  const appCopy = useAppCopy();
   const [dismissedIds, setDismissedIds] = useState<string[]>([]);
   const [deck, setDeck] = useState<PublicIssueSummary[]>([]);
   const [selectedIssueId, setSelectedIssueId] = useState<string | null>(null);
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
-  const categories = useIssueCategories();
   const { token } = useAuth();
-  const { location, isLoading: isLocating, error: locationError, requestLocation } =
-    useUserLocation();
   const feed = useSwipeFeed({
-    sort,
-    categoryId,
-    latitude: location?.latitude ?? null,
-    longitude: location?.longitude ?? null,
+    sort: "top",
     limit: 12,
     excludeIssueIds: dismissedIds,
   });
@@ -83,86 +71,57 @@ export function DiscoverScreen({ locale }: DiscoverScreenProps) {
 
   return (
     <>
-      <section className="grid gap-6 xl:grid-cols-[0.72fr_1.28fr]">
-        <div className="space-y-6">
-          <div className="rounded-[2rem] border border-border/70 bg-card/80 p-6 shadow-soft backdrop-blur sm:p-8">
-            <p className="text-xs font-semibold uppercase tracking-[0.32em] text-primary">
-              {appCopy.discover.stackTitle}
-            </p>
-            <h1 className="mt-4 font-display text-4xl font-semibold tracking-tight">
-              {appCopy.discover.title}
-            </h1>
-            <p className="mt-4 text-sm leading-7 text-muted-foreground">
-              {appCopy.discover.subtitle}
-            </p>
-            <p className="mt-4 text-sm leading-7 text-muted-foreground">
-              {appCopy.discover.stackBody}
-            </p>
+      <section className="mx-auto max-w-3xl space-y-5">
+        {!token ? (
+          <InlineMessage variant="info">{appCopy.discover.noAuthBody}</InlineMessage>
+        ) : null}
+        {feedbackMessage ? (
+          <InlineMessage
+            variant={
+              feedbackMessage === appCopy.discover.savedAction ||
+              feedbackMessage === appCopy.discover.refreshed
+                ? "success"
+                : "info"
+            }
+          >
+            {feedbackMessage}
+          </InlineMessage>
+        ) : null}
+        {feed.error ? (
+          <InlineMessage variant="error">
+            {appCopy.issueViews.errorTitle} {feed.error}
+          </InlineMessage>
+        ) : null}
 
-            <div className="mt-6 flex flex-wrap gap-3">
-              <Button asChild variant="outline">
-                <Link href={`/${locale}/issues` as Route}>
-                  <ListFilter className="mr-2 h-4 w-4" />
-                  {appCopy.issueViews.listTab}
-                </Link>
-              </Button>
-              <Button type="button" variant="outline" onClick={handleRefresh}>
-                <RefreshCw className="mr-2 h-4 w-4" />
-                {appCopy.discover.refresh}
-              </Button>
-            </div>
-          </div>
-
-          <IssueFilters
-            categories={categories.data}
-            sort={sort}
-            categoryId={categoryId}
-            onSortChange={setSort}
-            onCategoryChange={setCategoryId}
-            onRequestLocation={requestLocation}
-            isLocating={isLocating}
-            locationError={locationError}
+        {feed.isLoading && !deck.length ? (
+          <div className="h-[640px] animate-pulse rounded-[2rem] border border-border/70 bg-card/80 shadow-soft" />
+        ) : deck.length ? (
+          <SwipeDeck
+            issues={deck}
+            listHref={`/${locale}/issues` as Route}
+            onAction={handleAction}
+            onOpen={setSelectedIssueId}
+            onRefresh={handleRefresh}
           />
-
-          {!token ? (
-            <InlineMessage variant="info">{appCopy.discover.noAuthBody}</InlineMessage>
-          ) : null}
-          {feedbackMessage ? (
-            <InlineMessage
-              variant={
-                feedbackMessage === appCopy.discover.savedAction ||
-                feedbackMessage === appCopy.discover.refreshed
-                  ? "success"
-                  : "info"
-              }
-            >
-              {feedbackMessage}
-            </InlineMessage>
-          ) : null}
-          {categories.error || feed.error ? (
-            <InlineMessage variant="error">
-              {appCopy.issueViews.errorTitle} {categories.error || feed.error}
-            </InlineMessage>
-          ) : null}
-        </div>
-
-        <div className="min-w-0">
-          {feed.isLoading && !deck.length ? (
-            <div className="h-[640px] animate-pulse rounded-[2rem] border border-border/70 bg-card/80 shadow-soft" />
-          ) : deck.length ? (
-            <SwipeDeck issues={deck} onAction={handleAction} onOpen={setSelectedIssueId} />
-          ) : (
-            <EmptyState
-              title={appCopy.discover.deckEmptyTitle}
-              body={appCopy.discover.deckEmptyBody}
-              action={
+        ) : (
+          <EmptyState
+            title={appCopy.discover.deckEmptyTitle}
+            body={appCopy.discover.deckEmptyBody}
+            action={
+              <div className="flex flex-wrap gap-3">
                 <Button type="button" onClick={handleRefresh}>
                   {appCopy.discover.refresh}
                 </Button>
-              }
-            />
-          )}
-        </div>
+                <Button asChild variant="outline">
+                  <Link href={`/${locale}/issues` as Route}>
+                    <ListFilter className="mr-2 h-4 w-4" />
+                    {appCopy.issueViews.listTab}
+                  </Link>
+                </Button>
+              </div>
+            }
+          />
+        )}
       </section>
 
       <IssueDetailsSheet

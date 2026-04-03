@@ -1,10 +1,9 @@
-import { PageLoading } from "@/components/ui/page-loading";
-import { appCopy } from "@/content/copy";
+import { LocalizedPageLoading } from "@/components/ui/localized-page-loading";
 
 export default function PublicIssuesLoading() {
   return (
     <main className="container py-10">
-      <PageLoading title={appCopy.issueViews.loadingTitle} />
+      <LocalizedPageLoading kind="issues" />
     </main>
   );
 }

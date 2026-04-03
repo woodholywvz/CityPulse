@@ -2,7 +2,7 @@
 
 import type { Route } from "next";
 import Link from "next/link";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -15,24 +15,23 @@ import { Field } from "@/components/ui/field";
 import { InlineMessage } from "@/components/ui/inline-message";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
-import { appCopy } from "@/content/copy";
 import { useAuth } from "@/lib/auth/auth-provider";
 import { supportedLocales } from "@/lib/i18n";
-
-const signInSchema = z.object({
-  email: z.string().email("Enter a valid email address."),
-  password: z.string().min(8, "Password must be at least 8 characters."),
-});
-
-const registerSchema = z.object({
-  full_name: z.string().min(2, "Enter your full name."),
-  email: z.string().email("Enter a valid email address."),
-  password: z.string().min(8, "Password must be at least 8 characters."),
-  preferred_locale: z.string().min(2, "Choose a preferred locale."),
-});
-
-type SignInValues = z.infer<typeof signInSchema>;
-type RegisterValues = z.infer<typeof registerSchema>;
+import {
+  useAppCopy,
+  useLocaleMessages,
+  useValidationMessages,
+} from "@/lib/i18n-provider";
+type SignInValues = {
+  email: string;
+  password: string;
+};
+type RegisterValues = {
+  full_name: string;
+  email: string;
+  password: string;
+  preferred_locale: string;
+};
 
 type AuthScreenProps = Readonly<{
   locale: string;
@@ -43,6 +42,27 @@ export function AuthScreen({ locale }: AuthScreenProps) {
   const [notice, setNotice] = useState<string | null>(null);
   const { user, errorMessage, login, register } = useAuth();
   const router = useRouter();
+  const appCopy = useAppCopy();
+  const localeMessages = useLocaleMessages();
+  const validation = useValidationMessages();
+  const signInSchema = useMemo(
+    () =>
+      z.object({
+        email: z.string().email(validation.validEmail),
+        password: z.string().min(8, validation.passwordMin),
+      }),
+    [validation],
+  );
+  const registerSchema = useMemo(
+    () =>
+      z.object({
+        full_name: z.string().min(2, validation.fullNameMin),
+        email: z.string().email(validation.validEmail),
+        password: z.string().min(8, validation.passwordMin),
+        preferred_locale: z.string().min(2, validation.preferredLocale),
+      }),
+    [validation],
+  );
 
   const signInForm = useForm<SignInValues>({
     resolver: zodResolver(signInSchema),
@@ -215,7 +235,7 @@ export function AuthScreen({ locale }: AuthScreenProps) {
               <Select {...registerForm.register("preferred_locale")}>
                 {supportedLocales.map((supportedLocale) => (
                   <option key={supportedLocale} value={supportedLocale}>
-                    {supportedLocale}
+                    {localeMessages.locales[supportedLocale]}
                   </option>
                 ))}
               </Select>

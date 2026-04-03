@@ -4,7 +4,6 @@ import { useState } from "react";
 
 import { EmptyState } from "@/components/ui/empty-state";
 import { InlineMessage } from "@/components/ui/inline-message";
-import { appCopy } from "@/content/copy";
 import { IssueDetailsSheet } from "@/features/issues/components/issue-details-sheet";
 import { IssueFilters } from "@/features/issues/components/issue-filters";
 import { IssueMap } from "@/features/issues/components/issue-map";
@@ -14,18 +13,23 @@ import {
 } from "@/features/issues/hooks/use-public-issues";
 import { formatCompactNumber } from "@/features/issues/lib/presenters";
 import { useUserLocation } from "@/hooks/use-user-location";
+import { useAppCopy } from "@/lib/i18n-provider";
+import type { PublicIssueStatus } from "@/lib/api/types";
 
 type PublicIssueMapScreenProps = Readonly<{
   locale: string;
 }>;
 
 export function PublicIssueMapScreen({ locale }: PublicIssueMapScreenProps) {
+  const appCopy = useAppCopy();
+  const [status, setStatus] = useState<PublicIssueStatus>("published");
   const [categoryId, setCategoryId] = useState<string | null>(null);
   const [selectedIssueId, setSelectedIssueId] = useState<string | null>(null);
   const categories = useIssueCategories();
   const { location, isLoading: isLocating, error: locationError, requestLocation } =
     useUserLocation();
   const markers = useMapIssues({
+    status,
     categoryId,
     latitude: location?.latitude ?? null,
     longitude: location?.longitude ?? null,
@@ -53,8 +57,10 @@ export function PublicIssueMapScreen({ locale }: PublicIssueMapScreenProps) {
         <IssueFilters
           categories={categories.data}
           sort="recent"
+          status={status}
           categoryId={categoryId}
           onSortChange={() => undefined}
+          onStatusChange={setStatus}
           onCategoryChange={setCategoryId}
           onRequestLocation={requestLocation}
           isLocating={isLocating}

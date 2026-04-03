@@ -10,7 +10,6 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { InlineMessage } from "@/components/ui/inline-message";
 import { PageLoading } from "@/components/ui/page-loading";
 import { Select } from "@/components/ui/select";
-import { adminConsoleCopy } from "@/content/admin-console";
 import {
   AdminMetricCard,
   AdminSectionHeader,
@@ -28,6 +27,7 @@ import {
 } from "@/features/admin-console/lib/presenters";
 import { useIssueCategories } from "@/features/issues/hooks/use-public-issues";
 import { useAuth } from "@/lib/auth/auth-provider";
+import { useAdminCopy } from "@/lib/i18n-provider";
 
 type AdminIssuesScreenProps = Readonly<{
   locale: string;
@@ -51,6 +51,7 @@ const MODERATION_STATE_VALUES = MODERATION_STATE_OPTIONS.filter(
 );
 
 export function AdminIssuesScreen({ locale }: AdminIssuesScreenProps) {
+  const adminConsoleCopy = useAdminCopy();
   const { token, user } = useAuth();
   const isAdmin = user?.role === "admin";
   const [status, setStatus] = useState<string>("");
@@ -189,7 +190,7 @@ export function AdminIssuesScreen({ locale }: AdminIssuesScreenProps) {
                     />
                     {issue.author ? (
                       <AdminStatusBadge
-                        label={formatAbuseRiskLabel(issue.author.abuse_risk_level)}
+                        label={formatAbuseRiskLabel(issue.author.abuse_risk_level, adminConsoleCopy.common)}
                         tone={formatStatusTone(issue.author.abuse_risk_level)}
                       />
                     ) : null}

@@ -1,21 +1,33 @@
-/* eslint-disable @next/next/no-img-element */
-
 "use client";
 
-import { AnimatePresence, motion, useMotionValue, useTransform } from "framer-motion";
+import type { Route } from "next";
+import Link from "next/link";
+import { useId } from "react";
+
+import {
+  AnimatePresence,
+  motion,
+  useMotionValue,
+  useReducedMotion,
+  useTransform,
+} from "framer-motion";
 import {
   ArrowRightLeft,
   ChevronDown,
   ChevronUp,
   HeartHandshake,
   Info,
+  ListFilter,
+  MoreHorizontal,
+  RefreshCw,
   X,
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { appCopy } from "@/content/copy";
+import { ResponsiveImage } from "@/components/ui/responsive-image";
 import type { PublicIssueSummary, SwipeAction } from "@/lib/api/types";
+import { useAppCopy } from "@/lib/i18n-provider";
 import {
   formatCompactNumber,
   getIssueLocationSnippet,
@@ -24,21 +36,30 @@ import {
 
 type SwipeDeckProps = Readonly<{
   issues: PublicIssueSummary[];
+  listHref: Route;
   onAction: (action: SwipeAction) => void;
   onOpen: (issueId: string) => void;
+  onRefresh: () => void;
 }>;
 
 function SwipeCard({
   issue,
   index,
+  listHref,
   onAction,
   onOpen,
+  onRefresh,
+  shouldReduceMotion,
 }: {
   issue: PublicIssueSummary;
   index: number;
+  listHref: Route;
   onAction: (action: SwipeAction) => void;
   onOpen: (issueId: string) => void;
+  onRefresh: () => void;
+  shouldReduceMotion: boolean;
 }) {
+  const appCopy = useAppCopy();
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-220, 0, 220], [-10, 0, 10]);
   const supportOpacity = useTransform(x, [40, 140], [0, 1]);
@@ -66,13 +87,19 @@ function SwipeCard({
         scale: 0.92,
         y: -40,
       }}
-      transition={{ duration: 0.22, ease: "easeOut" }}
+      transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.22, ease: "easeOut" }}
       className="absolute inset-0"
     >
       <article className="flex h-full flex-col overflow-hidden rounded-[2rem] border border-border/70 bg-card/92 shadow-soft backdrop-blur">
         <div className="relative h-56 overflow-hidden border-b border-border/60 bg-muted/50">
           {issue.cover_image_url ? (
-            <img src={issue.cover_image_url} alt={issue.title} className="h-full w-full object-cover" />
+            <ResponsiveImage
+              src={issue.cover_image_url}
+              alt={issue.title}
+              className="relative h-full w-full"
+              sizes="(max-width: 768px) 100vw, 520px"
+              priority={index === 0}
+            />
           ) : (
             <div className="flex h-full flex-col justify-between bg-gradient-to-br from-secondary via-card to-accent/70 p-5">
               <Badge variant="primary">{issue.category.display_name}</Badge>
@@ -89,6 +116,53 @@ function SwipeCard({
 
           {index === 0 ? (
             <>
+              <details className="absolute right-4 top-4 z-10">
+                <summary className="flex h-11 w-11 cursor-pointer list-none items-center justify-center rounded-full border border-border/70 bg-background/88 text-foreground shadow-soft transition-colors hover:bg-card [&::-webkit-details-marker]:hidden">
+                  <MoreHorizontal className="h-4 w-4" />
+                </summary>
+                <div className="absolute right-0 mt-2 w-56 rounded-[1.25rem] border border-border/70 bg-card/95 p-2 shadow-soft backdrop-blur">
+                  <button
+                    type="button"
+                    onClick={(event) => {
+                      event.currentTarget.closest("details")?.removeAttribute("open");
+                      onOpen(issue.id);
+                    }}
+                    className="flex w-full items-center gap-2 rounded-[1rem] px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted"
+                  >
+                    <Info className="h-4 w-4" />
+                    <span>{appCopy.discover.details}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(event) => {
+                      event.currentTarget.closest("details")?.removeAttribute("open");
+                      onAction("more_like_this");
+                    }}
+                    className="flex w-full items-center gap-2 rounded-[1rem] px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted"
+                  >
+                    <ChevronUp className="h-4 w-4" />
+                    <span>{appCopy.discover.moreLikeThis}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(event) => {
+                      event.currentTarget.closest("details")?.removeAttribute("open");
+                      onRefresh();
+                    }}
+                    className="flex w-full items-center gap-2 rounded-[1rem] px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted"
+                  >
+                    <RefreshCw className="h-4 w-4" />
+                    <span>{appCopy.discover.refresh}</span>
+                  </button>
+                  <Link
+                    href={listHref}
+                    className="flex w-full items-center gap-2 rounded-[1rem] px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+                  >
+                    <ListFilter className="h-4 w-4" />
+                    <span>{appCopy.issueViews.listTab}</span>
+                  </Link>
+                </div>
+              </details>
               <motion.div
                 style={{ opacity: supportOpacity }}
                 className="absolute left-4 top-4 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm font-semibold text-emerald-700 dark:text-emerald-200"
@@ -126,10 +200,10 @@ function SwipeCard({
           </div>
 
           <div className="mt-auto pt-6">
-            <Button type="button" variant="outline" onClick={() => onOpen(issue.id)}>
-              <Info className="mr-2 h-4 w-4" />
-              {appCopy.discover.details}
-            </Button>
+            <div className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-card/80 px-4 py-2 text-sm text-muted-foreground">
+              <ArrowRightLeft className="h-4 w-4" />
+              <span>{formatCompactNumber(issue.support_count)}</span>
+            </div>
           </div>
         </div>
       </article>
@@ -137,13 +211,35 @@ function SwipeCard({
   );
 }
 
-export function SwipeDeck({ issues, onAction, onOpen }: SwipeDeckProps) {
+export function SwipeDeck({ issues, listHref, onAction, onOpen, onRefresh }: SwipeDeckProps) {
+  const appCopy = useAppCopy();
+  const shouldReduceMotion = Boolean(useReducedMotion());
+  const keyboardHintId = useId();
   const visibleIssues = issues.slice(0, 3);
   const activeIssue = issues[0];
 
   return (
-    <section className="space-y-5">
-      <div className="relative h-[640px]">
+    <section
+      className="space-y-5"
+      aria-describedby={keyboardHintId}
+      onKeyDown={(event) => {
+        if (!activeIssue) {
+          return;
+        }
+
+        if (event.key === "ArrowRight") {
+          event.preventDefault();
+          onAction("support");
+        }
+
+        if (event.key === "ArrowLeft") {
+          event.preventDefault();
+          onAction("skip");
+        }
+      }}
+      tabIndex={0}
+    >
+      <div className="relative h-[640px]" aria-live="polite">
         <AnimatePresence initial={false}>
           {visibleIssues
             .map((issue, index) => ({ issue, index }))
@@ -153,14 +249,21 @@ export function SwipeDeck({ issues, onAction, onOpen }: SwipeDeckProps) {
                 key={issue.id}
                 issue={issue}
                 index={index}
+                listHref={listHref}
                 onAction={onAction}
                 onOpen={onOpen}
+                onRefresh={onRefresh}
+                shouldReduceMotion={shouldReduceMotion}
               />
             ))}
         </AnimatePresence>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <p id={keyboardHintId} className="text-sm text-muted-foreground">
+        {appCopy.discover.keyboardHint}
+      </p>
+
+      <div className="grid gap-3 sm:grid-cols-3">
         <Button
           type="button"
           variant="outline"
@@ -173,15 +276,6 @@ export function SwipeDeck({ issues, onAction, onOpen }: SwipeDeckProps) {
         <Button type="button" onClick={() => onAction("support")} disabled={!activeIssue}>
           <HeartHandshake className="mr-2 h-4 w-4" />
           {appCopy.discover.support}
-        </Button>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => onAction("more_like_this")}
-          disabled={!activeIssue}
-        >
-          <ChevronUp className="mr-2 h-4 w-4" />
-          {appCopy.discover.moreLikeThis}
         </Button>
         <Button
           type="button"

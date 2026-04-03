@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { InlineMessage } from "@/components/ui/inline-message";
 import { PageLoading } from "@/components/ui/page-loading";
-import { adminConsoleCopy } from "@/content/admin-console";
 import {
   AdminMetricCard,
   AdminSectionHeader,
@@ -23,12 +22,14 @@ import {
   formatStatusTone,
 } from "@/features/admin-console/lib/presenters";
 import { useAuth } from "@/lib/auth/auth-provider";
+import { useAdminCopy } from "@/lib/i18n-provider";
 
 type AdminUsersScreenProps = Readonly<{
   locale: string;
 }>;
 
 export function AdminUsersScreen({ locale }: AdminUsersScreenProps) {
+  const adminConsoleCopy = useAdminCopy();
   const { token, user } = useAuth();
   const isAdmin = user?.role === "admin";
   const users = useAdminUsers(token, Boolean(isAdmin), 60);
@@ -99,7 +100,7 @@ export function AdminUsersScreen({ locale }: AdminUsersScreenProps) {
                       tone={entry.user.role === "admin" ? "primary" : "subtle"}
                     />
                     <AdminStatusBadge
-                      label={formatAbuseRiskLabel(entry.abuse_risk_level)}
+                      label={formatAbuseRiskLabel(entry.abuse_risk_level, adminConsoleCopy.common)}
                       tone={formatStatusTone(entry.abuse_risk_level)}
                     />
                     <AdminStatusBadge

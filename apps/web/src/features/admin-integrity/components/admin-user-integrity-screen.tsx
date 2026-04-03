@@ -11,11 +11,11 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { InlineMessage } from "@/components/ui/inline-message";
 import { PageLoading } from "@/components/ui/page-loading";
-import { appCopy } from "@/content/copy";
 import { formatIssueDate } from "@/features/issues/lib/presenters";
 import { useAdminUserIntegrityDetail } from "@/features/admin-integrity/hooks/use-admin-integrity";
 import { apiClient } from "@/lib/api/client";
 import { useAuth } from "@/lib/auth/auth-provider";
+import { useAppCopy } from "@/lib/i18n-provider";
 import type {
   AbuseRiskLevel,
   IntegrityEventSeverity,
@@ -28,7 +28,7 @@ type AdminUserIntegrityScreenProps = Readonly<{
   userId: string;
 }>;
 
-function getRiskLabel(level: AbuseRiskLevel) {
+function getRiskLabel(level: AbuseRiskLevel, appCopy: ReturnType<typeof useAppCopy>) {
   if (level === "high") {
     return appCopy.common.high;
   }
@@ -38,7 +38,10 @@ function getRiskLabel(level: AbuseRiskLevel) {
   return appCopy.common.low;
 }
 
-function getSeverityLabel(level: IntegrityEventSeverity) {
+function getSeverityLabel(
+  level: IntegrityEventSeverity,
+  appCopy: ReturnType<typeof useAppCopy>,
+) {
   if (level === "high") {
     return appCopy.common.high;
   }
@@ -70,7 +73,7 @@ function getSeverityBadgeVariant(
   return "subtle";
 }
 
-function formatMetricValue(value: unknown) {
+function formatMetricValue(value: unknown, appCopy: ReturnType<typeof useAppCopy>) {
   if (typeof value === "number") {
     return Number.isInteger(value) ? String(value) : value.toFixed(2);
   }
@@ -80,7 +83,11 @@ function formatMetricValue(value: unknown) {
   return appCopy.common.none;
 }
 
-function renderFactorList(factors: IntegrityFactor[], emptyLabel: string) {
+function renderFactorList(
+  factors: IntegrityFactor[],
+  emptyLabel: string,
+  appCopy: ReturnType<typeof useAppCopy>,
+) {
   if (!factors.length) {
     return <p className="text-sm leading-6 text-slate-300">{emptyLabel}</p>;
   }
@@ -107,7 +114,7 @@ function renderFactorList(factors: IntegrityFactor[], emptyLabel: string) {
             <div className="mt-3 flex flex-wrap gap-2 text-xs uppercase tracking-[0.2em] text-slate-400">
               {Object.entries(factor.details).map(([key, value]) => (
                 <span key={key}>
-                  {key}: {formatMetricValue(value)}
+                  {key}: {formatMetricValue(value, appCopy)}
                 </span>
               ))}
             </div>
@@ -118,7 +125,10 @@ function renderFactorList(factors: IntegrityFactor[], emptyLabel: string) {
   );
 }
 
-function renderSummaryCards(detail: UserIntegrityDetail) {
+function renderSummaryCards(
+  detail: UserIntegrityDetail,
+  appCopy: ReturnType<typeof useAppCopy>,
+) {
   return (
     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
       <article className="rounded-[1.5rem] border border-white/10 bg-white/5 p-5">
@@ -143,7 +153,7 @@ function renderSummaryCards(detail: UserIntegrityDetail) {
         </p>
         <div className="mt-3 flex items-center gap-3">
           <Badge variant={getRiskBadgeVariant(detail.abuse_risk_level)}>
-            {getRiskLabel(detail.abuse_risk_level)}
+            {getRiskLabel(detail.abuse_risk_level, appCopy)}
           </Badge>
           <span className="font-display text-3xl font-semibold text-white">
             {detail.abuse_risk_score.toFixed(1)}
@@ -166,6 +176,7 @@ export function AdminUserIntegrityScreen({
   locale,
   userId,
 }: AdminUserIntegrityScreenProps) {
+  const appCopy = useAppCopy();
   const { token, user } = useAuth();
   const [notice, setNotice] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -243,7 +254,7 @@ export function AdminUserIntegrityScreen({
 
       {notice ? <InlineMessage variant="info">{notice}</InlineMessage> : null}
 
-      {renderSummaryCards(current)}
+      {renderSummaryCards(current, appCopy)}
 
       <div className="grid gap-6 xl:grid-cols-[0.76fr_1.24fr]">
         <div className="space-y-6">
@@ -337,7 +348,7 @@ export function AdminUserIntegrityScreen({
                   >
                     <div className="flex flex-wrap items-center gap-2">
                       <Badge variant={getSeverityBadgeVariant(event.severity)}>
-                        {getSeverityLabel(event.severity)}
+                        {getSeverityLabel(event.severity, appCopy)}
                       </Badge>
                       <Badge variant="subtle">{event.event_type}</Badge>
                     </div>
@@ -363,7 +374,7 @@ export function AdminUserIntegrityScreen({
               {appCopy.adminIntegrity.trustFactorsTitle}
             </p>
             <div className="mt-4">
-              {renderFactorList(current.trust_factors, appCopy.adminIntegrity.emptyFactors)}
+              {renderFactorList(current.trust_factors, appCopy.adminIntegrity.emptyFactors, appCopy)}
             </div>
           </article>
 
@@ -372,7 +383,7 @@ export function AdminUserIntegrityScreen({
               {appCopy.adminIntegrity.abuseFactorsTitle}
             </p>
             <div className="mt-4">
-              {renderFactorList(current.abuse_factors, appCopy.adminIntegrity.emptyFactors)}
+              {renderFactorList(current.abuse_factors, appCopy.adminIntegrity.emptyFactors, appCopy)}
             </div>
           </article>
 
@@ -387,7 +398,7 @@ export function AdminUserIntegrityScreen({
                   className="rounded-[1.25rem] border border-white/10 bg-white/5 px-4 py-3"
                 >
                   <p className="text-xs uppercase tracking-[0.2em] text-slate-400">{key}</p>
-                  <p className="mt-2 text-sm text-slate-100">{formatMetricValue(value)}</p>
+                  <p className="mt-2 text-sm text-slate-100">{formatMetricValue(value, appCopy)}</p>
                 </div>
               ))}
             </div>

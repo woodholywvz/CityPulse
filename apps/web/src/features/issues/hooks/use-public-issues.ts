@@ -6,6 +6,7 @@ import type {
   PublicIssueDetail,
   PublicHeatPoint,
   PublicIssueMapMarker,
+  PublicIssueStatus,
   PublicIssueSort,
   PublicIssueSummary,
 } from "@/lib/api/types";
@@ -13,6 +14,7 @@ import { useAsyncResource } from "@/hooks/use-async-resource";
 
 type PublicIssueQueryInput = {
   sort?: PublicIssueSort;
+  status?: PublicIssueStatus;
   categoryId?: string | null;
   latitude?: number | null;
   longitude?: number | null;
@@ -32,6 +34,7 @@ export function usePublicIssues(input: PublicIssueQueryInput) {
     initialValue: [],
     deps: [
       input.sort ?? "recent",
+      input.status ?? "published",
       input.categoryId ?? "",
       input.latitude ?? null,
       input.longitude ?? null,
@@ -51,6 +54,7 @@ export function useSwipeFeed(
     deps: [
       input.sort ?? "recent",
       input.categoryId ?? "",
+      input.status ?? "published",
       input.latitude ?? null,
       input.longitude ?? null,
       input.limit ?? 12,

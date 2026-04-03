@@ -5,7 +5,7 @@ import { ArrowRight, Compass, FilePlus2, FolderClock } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { appCopy } from "@/content/copy";
+import { getAppCopy } from "@/lib/i18n";
 
 type DashboardPageProps = Readonly<{
   params: Promise<{ locale: string }>;
@@ -15,6 +15,7 @@ const ICONS = [Compass, FilePlus2, FolderClock];
 
 export default async function CitizenDashboardPage({ params }: DashboardPageProps) {
   const { locale } = await params;
+  const appCopy = getAppCopy(locale);
 
   const hrefs: Route[] = [
     `/${locale}/discover` as Route,

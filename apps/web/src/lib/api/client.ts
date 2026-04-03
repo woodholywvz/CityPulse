@@ -1,4 +1,5 @@
-import { siteConfig } from "@/lib/site";
+import { resolveApiBaseUrl } from "@/lib/site";
+import { reportClientEvent } from "@/lib/observability";
 import type {
   AdminActivityTrendPoint,
   AdminDashboard,
@@ -33,6 +34,7 @@ import type {
   PublicIssueDetail,
   PublicHeatPoint,
   PublicIssueMapMarker,
+  PublicIssueStatus,
   PublicIssueSort,
   PublicIssueSummary,
   RewriteResponse,
@@ -45,6 +47,7 @@ import type {
 
 type RequestOptions = RequestInit & {
   token?: string | null;
+  retryCount?: number;
 };
 
 export class ApiError extends Error {
@@ -73,7 +76,7 @@ export class ApiError extends Error {
 }
 
 function buildUrl(path: string, searchParams?: URLSearchParams) {
-  const url = new URL(path, siteConfig.apiBaseUrl);
+  const url = new URL(path, resolveApiBaseUrl());
   if (searchParams) {
     url.search = searchParams.toString();
   }
@@ -86,17 +89,50 @@ async function request<T>(
   searchParams?: URLSearchParams,
 ): Promise<T> {
   const headers = new Headers(options.headers);
-  headers.set("Content-Type", "application/json");
+  if (options.body) {
+    headers.set("Content-Type", "application/json");
+  }
 
   if (options.token) {
     headers.set("Authorization", `Bearer ${options.token}`);
   }
 
-  const response = await fetch(buildUrl(path, searchParams), {
-    ...options,
-    headers,
-    cache: options.cache ?? "no-store",
-  });
+  const retryCount = options.retryCount ?? (options.method && options.method !== "GET" ? 0 : 2);
+  let response: Response;
+
+  try {
+    response = await fetch(buildUrl(path, searchParams), {
+      ...options,
+      headers,
+      cache: options.cache ?? "no-store",
+    });
+  } catch (error) {
+    if (retryCount > 0) {
+      await new Promise((resolve) => setTimeout(resolve, 250));
+      return request<T>(path, { ...options, retryCount: retryCount - 1 }, searchParams);
+    }
+
+    reportClientEvent({
+      name: "api_request_network_failed",
+      error,
+      context: {
+        path,
+        method: options.method ?? "GET",
+      },
+    });
+
+    throw new ApiError(
+      error instanceof Error ? error.message : "Network request failed.",
+      {
+        status: 0,
+      },
+    );
+  }
+
+  if ([502, 503, 504].includes(response.status) && retryCount > 0) {
+    await new Promise((resolve) => setTimeout(resolve, 250));
+    return request<T>(path, { ...options, retryCount: retryCount - 1 }, searchParams);
+  }
 
   if (!response.ok) {
     let payload: ApiErrorPayload | null = null;
@@ -106,6 +142,17 @@ async function request<T>(
     } catch {
       payload = null;
     }
+
+    reportClientEvent({
+      name: "api_request_failed",
+      level: response.status >= 500 ? "error" : "warning",
+      context: {
+        path,
+        method: options.method ?? "GET",
+        status: response.status,
+        code: payload?.error.code ?? null,
+      },
+    });
 
     throw new ApiError(payload?.error.message ?? "Request failed.", {
       status: response.status,
@@ -147,6 +194,7 @@ export const apiClient = {
 
   async listPublicIssues(input: {
     sort?: PublicIssueSort;
+    status?: PublicIssueStatus;
     categoryId?: string | null;
     latitude?: number | null;
     longitude?: number | null;
@@ -154,6 +202,7 @@ export const apiClient = {
   }) {
     const params = new URLSearchParams();
     if (input.sort) params.set("sort", input.sort);
+    if (input.status) params.set("status", input.status);
     if (input.categoryId) params.set("category_id", input.categoryId);
     if (typeof input.latitude === "number") params.set("latitude", String(input.latitude));
     if (typeof input.longitude === "number") params.set("longitude", String(input.longitude));
@@ -182,12 +231,14 @@ export const apiClient = {
   },
 
   async listMapIssues(input: {
+    status?: PublicIssueStatus;
     categoryId?: string | null;
     latitude?: number | null;
     longitude?: number | null;
     limit?: number;
   }) {
     const params = new URLSearchParams();
+    if (input.status) params.set("status", input.status);
     if (input.categoryId) params.set("category_id", input.categoryId);
     if (typeof input.latitude === "number") params.set("latitude", String(input.latitude));
     if (typeof input.longitude === "number") params.set("longitude", String(input.longitude));

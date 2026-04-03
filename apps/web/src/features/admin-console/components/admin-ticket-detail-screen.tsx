@@ -12,7 +12,6 @@ import { InlineMessage } from "@/components/ui/inline-message";
 import { PageLoading } from "@/components/ui/page-loading";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { adminConsoleCopy } from "@/content/admin-console";
 import {
   AdminKeyValueGrid,
   AdminSectionHeader,
@@ -28,6 +27,7 @@ import {
 } from "@/features/admin-console/lib/presenters";
 import { apiClient } from "@/lib/api/client";
 import { useAuth } from "@/lib/auth/auth-provider";
+import { useAdminCopy } from "@/lib/i18n-provider";
 
 type AdminTicketDetailScreenProps = Readonly<{
   locale: string;
@@ -46,6 +46,7 @@ export function AdminTicketDetailScreen({
   locale,
   ticketId,
 }: AdminTicketDetailScreenProps) {
+  const adminConsoleCopy = useAdminCopy();
   const { token, user } = useAuth();
   const isAdmin = user?.role === "admin";
   const detail = useAdminTicketDetail(token, Boolean(isAdmin), ticketId);

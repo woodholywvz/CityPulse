@@ -5,6 +5,8 @@ import "@/app/globals.css";
 import "leaflet/dist/leaflet.css";
 
 import { AppProviders } from "@/app/providers";
+import { defaultLocale, getMessages } from "@/lib/i18n";
+import { siteConfig } from "@/lib/site";
 
 const manrope = Manrope({
   subsets: ["latin"],
@@ -17,8 +19,8 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "CityPulse",
-  description: "Civic issue reporting platform for citizens and government bodies.",
+  title: siteConfig.name,
+  description: getMessages(defaultLocale).metadata.description,
 };
 
 export default function RootLayout({

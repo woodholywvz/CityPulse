@@ -41,9 +41,9 @@ export function SimpleBarChart({
     <div className={cn("space-y-3", className)}>
       {points.map((point) => (
         <div key={point.label} className="space-y-2">
-          <div className="flex items-center justify-between gap-3 text-sm">
-            <span className="text-slate-200">{point.label}</span>
-            <span className="font-semibold text-white">
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 text-sm">
+            <span className="min-w-0 break-words text-slate-200">{point.label}</span>
+            <span className="whitespace-nowrap text-right font-semibold text-white">
               {valueFormatter(point.value)}
             </span>
           </div>
@@ -183,9 +183,9 @@ export function DistributionList({
     <div className="space-y-3">
       {points.map((point) => (
         <div key={point.label} className="space-y-2">
-          <div className="flex items-center justify-between gap-3 text-sm">
-            <span className="text-slate-200">{point.label}</span>
-            <span className="font-semibold text-white">
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 text-sm">
+            <span className="min-w-0 break-words text-slate-200">{point.label}</span>
+            <span className="whitespace-nowrap text-right font-semibold text-white">
               {point.count} · {(point.share * 100).toFixed(0)}%
             </span>
           </div>

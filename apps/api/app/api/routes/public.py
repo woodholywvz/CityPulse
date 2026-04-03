@@ -4,6 +4,7 @@ from uuid import UUID
 from fastapi import APIRouter, Query, status
 
 from app.api.deps import CurrentOptionalUser, CurrentUser, SessionDep
+from app.models.enums import IssueStatus
 from app.schemas.admin import PublicHeatPointRead
 from app.schemas.issue import (
     IssueCategoryRead,
@@ -59,6 +60,7 @@ async def list_public_issue_feed(
 async def list_public_issues(
     session: SessionDep,
     sort: str = "recent",
+    status: IssueStatus = IssueStatus.PUBLISHED,
     category_id: UUID | None = None,
     latitude: float | None = None,
     longitude: float | None = None,
@@ -68,6 +70,7 @@ async def list_public_issues(
     return await service.list_public_issues(
         PublicIssueQuery(
             sort=sort,
+            status=status,
             category_id=category_id,
             latitude=latitude,
             longitude=longitude,
@@ -79,6 +82,7 @@ async def list_public_issues(
 @router.get("/issues/map", response_model=list[PublicIssueMapMarkerRead])
 async def list_public_issue_map_markers(
     session: SessionDep,
+    status: IssueStatus = IssueStatus.PUBLISHED,
     category_id: UUID | None = None,
     latitude: float | None = None,
     longitude: float | None = None,
@@ -88,6 +92,7 @@ async def list_public_issue_map_markers(
     return await service.list_public_map_markers(
         PublicIssueQuery(
             sort="recent",
+            status=status,
             category_id=category_id,
             latitude=latitude,
             longitude=longitude,

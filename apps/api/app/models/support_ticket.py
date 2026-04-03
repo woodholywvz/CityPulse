@@ -3,10 +3,11 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from uuid import UUID
 
-from sqlalchemy import Enum, ForeignKey, Index, String, Uuid
+from sqlalchemy import ForeignKey, Index, String, Uuid
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, TimestampMixin, UUIDPrimaryKeyMixin
+from app.models.enum_types import enum_values_type
 from app.models.enums import SupportTicketStatus, SupportTicketType
 
 if TYPE_CHECKING:
@@ -33,11 +34,11 @@ class SupportTicket(UUIDPrimaryKeyMixin, TimestampMixin, Base):
         nullable=False,
     )
     ticket_type: Mapped[SupportTicketType] = mapped_column(
-        Enum(SupportTicketType, name="support_ticket_type", native_enum=False),
+        enum_values_type(SupportTicketType, name="support_ticket_type"),
         nullable=False,
     )
     status: Mapped[SupportTicketStatus] = mapped_column(
-        Enum(SupportTicketStatus, name="support_ticket_status", native_enum=False),
+        enum_values_type(SupportTicketStatus, name="support_ticket_status"),
         default=SupportTicketStatus.OPEN,
         nullable=False,
     )

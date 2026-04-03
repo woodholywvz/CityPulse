@@ -3,10 +3,11 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from uuid import UUID
 
-from sqlalchemy import Enum, ForeignKey, Index, UniqueConstraint, Uuid
+from sqlalchemy import ForeignKey, Index, UniqueConstraint, Uuid
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, TimestampMixin, UUIDPrimaryKeyMixin
+from app.models.enum_types import enum_values_type
 from app.models.enums import SwipeDirection
 
 if TYPE_CHECKING:
@@ -32,7 +33,7 @@ class SwipeFeedback(UUIDPrimaryKeyMixin, TimestampMixin, Base):
         nullable=False,
     )
     direction: Mapped[SwipeDirection] = mapped_column(
-        Enum(SwipeDirection, name="swipe_direction", native_enum=False),
+        enum_values_type(SwipeDirection, name="swipe_direction"),
         nullable=False,
     )
 

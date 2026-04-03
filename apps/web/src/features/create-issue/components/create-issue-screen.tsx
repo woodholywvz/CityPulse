@@ -4,7 +4,7 @@
 
 import type { Route } from "next";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Camera, Sparkles, Upload, WandSparkles } from "lucide-react";
@@ -19,7 +19,6 @@ import { InlineMessage } from "@/components/ui/inline-message";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { appCopy } from "@/content/copy";
 import { LocationPickerMap } from "@/features/create-issue/components/location-picker-map";
 import { IssueCard } from "@/features/issues/components/issue-card";
 import { IssueDetailsSheet } from "@/features/issues/components/issue-details-sheet";
@@ -39,18 +38,13 @@ import type {
   RewriteResponse,
 } from "@/lib/api/types";
 import { useAuth } from "@/lib/auth/auth-provider";
+import { useAppCopy, useValidationMessages } from "@/lib/i18n-provider";
 
-const createIssueSchema = z.object({
-  title: z.string().trim().min(4, "Enter a short title.").max(160),
-  short_description: z
-    .string()
-    .trim()
-    .min(10, "Add a clearer description.")
-    .max(4000),
-  category_id: z.string().min(1, "Choose a category."),
-});
-
-type CreateIssueValues = z.infer<typeof createIssueSchema>;
+type CreateIssueValues = {
+  title: string;
+  short_description: string;
+  category_id: string;
+};
 
 type PhotoDraft = {
   id: string;
@@ -62,11 +56,6 @@ type CreateIssueScreenProps = Readonly<{
   locale: string;
 }>;
 
-const STEP_LABELS = [
-  appCopy.create.stepContent,
-  appCopy.create.stepLocation,
-  appCopy.create.stepReview,
-] as const;
 const MODERATION_PREVIEW_VARIANTS = [
   { maxDimension: 1280, quality: 0.72 },
   { maxDimension: 960, quality: 0.62 },
@@ -85,16 +74,16 @@ function createStorageKey(issueId: string, fileName: string) {
   return `issues/${issueId}/${randomPart}-${sanitizeFileName(fileName)}`;
 }
 
-function loadImageElement(objectUrl: string) {
+function loadImageElement(objectUrl: string, errorMessage: string) {
   return new Promise<HTMLImageElement>((resolve, reject) => {
     const image = new Image();
     image.onload = () => resolve(image);
-    image.onerror = () => reject(new Error("Image preview could not be prepared."));
+    image.onerror = () => reject(new Error(errorMessage));
     image.src = objectUrl;
   });
 }
 
-async function createModerationImagePreview(file: File) {
+async function createModerationImagePreview(file: File, errorMessage: string) {
   if (typeof window === "undefined" || !file.type.startsWith("image/")) {
     return null;
   }
@@ -102,7 +91,7 @@ async function createModerationImagePreview(file: File) {
   const objectUrl = URL.createObjectURL(file);
 
   try {
-    const image = await loadImageElement(objectUrl);
+    const image = await loadImageElement(objectUrl, errorMessage);
     let lastDataUrl: string | null = null;
 
     for (const variant of MODERATION_PREVIEW_VARIANTS) {
@@ -135,17 +124,20 @@ async function createModerationImagePreview(file: File) {
   }
 }
 
-function getSubmittedIssueFeedback(issue: Issue) {
+function getSubmittedIssueFeedback(
+  issue: Issue,
+  createCopy: ReturnType<typeof useAppCopy>["create"],
+) {
   const explanation =
     issue.latest_moderation?.user_safe_explanation ??
     issue.latest_moderation?.summary ??
-    appCopy.create.successBody;
+    createCopy.successBody;
 
   if (issue.status === "rejected") {
     return {
       variant: "error" as const,
-      title: appCopy.create.moderationRejectedTitle,
-      body: explanation || appCopy.create.moderationRejectedBody,
+      title: createCopy.moderationRejectedTitle,
+      body: explanation || createCopy.moderationRejectedBody,
     };
   }
 
@@ -155,19 +147,39 @@ function getSubmittedIssueFeedback(issue: Issue) {
   ) {
     return {
       variant: "warning" as const,
-      title: appCopy.create.moderationReviewTitle,
-      body: explanation || appCopy.create.moderationReviewBody,
+      title: createCopy.moderationReviewTitle,
+      body: explanation || createCopy.moderationReviewBody,
     };
   }
 
   return {
     variant: "success" as const,
-    title: appCopy.create.moderationApprovedTitle,
-    body: explanation || appCopy.create.moderationApprovedBody,
+    title: createCopy.moderationApprovedTitle,
+    body: explanation || createCopy.moderationApprovedBody,
   };
 }
 
 export function CreateIssueScreen({ locale }: CreateIssueScreenProps) {
+  const appCopy = useAppCopy();
+  const validation = useValidationMessages();
+  const createIssueSchema = useMemo(
+    () =>
+      z.object({
+        title: z.string().trim().min(4, validation.shortTitle).max(160),
+        short_description: z
+          .string()
+          .trim()
+          .min(10, validation.descriptionMin)
+          .max(4000),
+        category_id: z.string().min(1, validation.categoryRequired),
+      }),
+    [validation],
+  );
+  const stepLabels = [
+    appCopy.create.stepContent,
+    appCopy.create.stepLocation,
+    appCopy.create.stepReview,
+  ] as const;
   const [step, setStep] = useState(0);
   const [latitude, setLatitude] = useState<number | null>(null);
   const [longitude, setLongitude] = useState<number | null>(null);
@@ -214,7 +226,7 @@ export function CreateIssueScreen({ locale }: CreateIssueScreenProps) {
   const authToken = token;
 
   if (submittedIssue) {
-    const submissionFeedback = getSubmittedIssueFeedback(submittedIssue);
+    const submissionFeedback = getSubmittedIssueFeedback(submittedIssue, appCopy.create);
 
     return (
       <section className="space-y-6">
@@ -423,7 +435,7 @@ export function CreateIssueScreen({ locale }: CreateIssueScreenProps) {
         appCopy.create.duplicateSupportResult,
         formatImpactScore(response.public_impact_score),
         formatAffectedPeopleEstimate(response.affected_people_estimate),
-      ].join(" | "));
+      ].join(` ${appCopy.common.separator} `));
       /* setNotice(
         `${appCopy.create.duplicateSupportResult} ${response.public_impact_score.toFixed(1)}/10 · ${response.affected_people_estimate}`,
       ); */
@@ -455,7 +467,10 @@ export function CreateIssueScreen({ locale }: CreateIssueScreenProps) {
       let finalIssue = createdIssue;
 
       for (const photo of photoDrafts) {
-        const moderationImageUrl = await createModerationImagePreview(photo.file);
+        const moderationImageUrl = await createModerationImagePreview(
+          photo.file,
+          validation.imagePreviewFailed,
+        );
         await apiClient.createAttachmentMetadata(authToken, createdIssue.id, {
           original_filename: photo.file.name,
           content_type: photo.file.type || "application/octet-stream",
@@ -495,7 +510,7 @@ export function CreateIssueScreen({ locale }: CreateIssueScreenProps) {
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-3xl">
             <p className="text-xs font-semibold uppercase tracking-[0.32em] text-primary">
-              {STEP_LABELS[step]}
+              {stepLabels[step]}
             </p>
             <h1 className="mt-4 font-display text-4xl font-semibold tracking-tight">
               {appCopy.create.title}
@@ -506,7 +521,7 @@ export function CreateIssueScreen({ locale }: CreateIssueScreenProps) {
           </div>
 
           <div className="flex flex-wrap gap-2">
-            {STEP_LABELS.map((label, index) => (
+            {stepLabels.map((label, index) => (
               <Badge key={label} variant={index === step ? "primary" : "subtle"}>
                 {index + 1}. {label}
               </Badge>

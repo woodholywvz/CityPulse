@@ -1,6 +1,5 @@
-import { PageLoading } from "@/components/ui/page-loading";
-import { appCopy } from "@/content/copy";
+import { LocalizedPageLoading } from "@/components/ui/localized-page-loading";
 
 export default function LoadingAdminUserIntegrityPage() {
-  return <PageLoading title={appCopy.common.loading} />;
+  return <LocalizedPageLoading kind="admin-user-detail" />;
 }

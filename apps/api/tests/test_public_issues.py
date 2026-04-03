@@ -57,6 +57,19 @@ async def test_public_issue_feed_feedback_duplicate_and_rewrite(
     )
     issue_id = create_response.json()["id"]
 
+    attachment_response = await client.post(
+        f"/api/issues/{issue_id}/attachments",
+        headers=author_headers,
+        json={
+            "original_filename": "elm-park-demo.jpg",
+            "content_type": "image/jpeg",
+            "size_bytes": 128000,
+            "storage_key": "demo/elm-park-demo.jpg",
+            "moderation_image_url": "https://picsum.photos/seed/test-public-issue-cover/1200/800",
+        },
+    )
+    assert attachment_response.status_code == 201
+
     async with session_factory() as session:
         issue = await session.scalar(select(Issue).where(Issue.id == UUID(issue_id)))
         assert issue is not None
@@ -87,6 +100,10 @@ async def test_public_issue_feed_feedback_duplicate_and_rewrite(
     assert len(feed_body) == 1
     assert feed_body[0]["support_count"] == 1
     assert feed_body[0]["importance_label"] is not None
+    assert (
+        feed_body[0]["cover_image_url"]
+        == "https://picsum.photos/seed/test-public-issue-cover/1200/800"
+    )
 
     duplicate_response = await client.post(
         "/api/public/issues/duplicates",

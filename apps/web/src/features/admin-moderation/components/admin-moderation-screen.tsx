@@ -12,7 +12,6 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { InlineMessage } from "@/components/ui/inline-message";
 import { PageLoading } from "@/components/ui/page-loading";
-import { appCopy } from "@/content/copy";
 import { formatIssueDate } from "@/features/issues/lib/presenters";
 import { useAdminIntegrityUsers } from "@/features/admin-integrity/hooks/use-admin-integrity";
 import {
@@ -21,18 +20,22 @@ import {
 } from "@/features/admin-moderation/hooks/use-admin-moderation";
 import { apiClient } from "@/lib/api/client";
 import { useAuth } from "@/lib/auth/auth-provider";
+import { useAppCopy } from "@/lib/i18n-provider";
 
 type AdminModerationScreenProps = Readonly<{
   locale: string;
 }>;
 
-function formatLayerLabel(layer: "deterministic" | "llm") {
+function formatLayerLabel(
+  layer: "deterministic" | "llm",
+  appCopy: ReturnType<typeof useAppCopy>,
+) {
   return layer === "deterministic"
     ? appCopy.adminModeration.stageDeterministic
     : appCopy.adminModeration.stageLlm;
 }
 
-function formatDecisionLabel(status: string) {
+function formatDecisionLabel(status: string, appCopy: ReturnType<typeof useAppCopy>) {
   if (status === "approved") {
     return appCopy.common.approved;
   }
@@ -42,7 +45,7 @@ function formatDecisionLabel(status: string) {
   return appCopy.common.manualReview;
 }
 
-function formatRiskLabel(level: "low" | "medium" | "high") {
+function formatRiskLabel(level: "low" | "medium" | "high", appCopy: ReturnType<typeof useAppCopy>) {
   if (level === "high") {
     return appCopy.common.high;
   }
@@ -53,6 +56,7 @@ function formatRiskLabel(level: "low" | "medium" | "high") {
 }
 
 export function AdminModerationScreen({ locale }: AdminModerationScreenProps) {
+  const appCopy = useAppCopy();
   const { token, user } = useAuth();
   const [selectedIssueId, setSelectedIssueId] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -133,11 +137,11 @@ export function AdminModerationScreen({ locale }: AdminModerationScreenProps) {
                   <Badge variant="accent">{issue.category.display_name}</Badge>
                   {issue.latest_moderation ? (
                     <Badge variant="primary">
-                      {formatLayerLabel(issue.latest_moderation.layer)}
+                      {formatLayerLabel(issue.latest_moderation.layer, appCopy)}
                     </Badge>
                   ) : null}
                   <Badge variant="subtle">
-                    {formatDecisionLabel(issue.latest_moderation?.status ?? "needs_review")}
+                    {formatDecisionLabel(issue.latest_moderation?.status ?? "needs_review", appCopy)}
                   </Badge>
                 </div>
                 <h2 className="mt-4 font-display text-2xl font-semibold text-white">
@@ -173,7 +177,7 @@ export function AdminModerationScreen({ locale }: AdminModerationScreenProps) {
                       }
                     >
                       {appCopy.adminModeration.abuseRiskLabel}:{" "}
-                      {formatRiskLabel(issue.author.abuse_risk_level)}
+                      {formatRiskLabel(issue.author.abuse_risk_level, appCopy)}
                     </Badge>
                   </div>
                 ) : null}
@@ -252,7 +256,7 @@ export function AdminModerationScreen({ locale }: AdminModerationScreenProps) {
                     }
                   >
                     {appCopy.adminModeration.abuseRiskLabel}:{" "}
-                    {formatRiskLabel(detail.data.author.abuse_risk_level)}
+                    {formatRiskLabel(detail.data.author.abuse_risk_level, appCopy)}
                   </Badge>
                 </div>
               </article>
@@ -264,8 +268,8 @@ export function AdminModerationScreen({ locale }: AdminModerationScreenProps) {
                 className="rounded-[1.5rem] border border-white/10 bg-slate-900/70 p-5"
               >
                 <div className="flex flex-wrap items-center gap-2">
-                  <Badge variant="primary">{formatLayerLabel(result.layer)}</Badge>
-                  <Badge variant="subtle">{formatDecisionLabel(result.status)}</Badge>
+                  <Badge variant="primary">{formatLayerLabel(result.layer, appCopy)}</Badge>
+                  <Badge variant="subtle">{formatDecisionLabel(result.status, appCopy)}</Badge>
                   {result.escalation_required ? (
                     <Badge variant="accent">{appCopy.common.manualReview}</Badge>
                   ) : null}
@@ -363,7 +367,7 @@ export function AdminModerationScreen({ locale }: AdminModerationScreenProps) {
                       }
                     >
                       {appCopy.adminModeration.abuseRiskLabel}:{" "}
-                      {formatRiskLabel(entry.abuse_risk_level)}
+                      {formatRiskLabel(entry.abuse_risk_level, appCopy)}
                     </Badge>
                   </div>
                   <p className="mt-3 font-semibold text-white">{entry.user.full_name}</p>

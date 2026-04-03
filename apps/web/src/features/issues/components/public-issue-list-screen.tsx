@@ -10,7 +10,6 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { InlineMessage } from "@/components/ui/inline-message";
 import { PageLoading } from "@/components/ui/page-loading";
 import { Button } from "@/components/ui/button";
-import { appCopy } from "@/content/copy";
 import { IssueCard } from "@/features/issues/components/issue-card";
 import { IssueDetailsSheet } from "@/features/issues/components/issue-details-sheet";
 import { IssueFilters } from "@/features/issues/components/issue-filters";
@@ -19,14 +18,17 @@ import {
   usePublicIssues,
 } from "@/features/issues/hooks/use-public-issues";
 import { useUserLocation } from "@/hooks/use-user-location";
-import type { PublicIssueSort } from "@/lib/api/types";
+import { useAppCopy } from "@/lib/i18n-provider";
+import type { PublicIssueSort, PublicIssueStatus } from "@/lib/api/types";
 
 type PublicIssueListScreenProps = Readonly<{
   locale: string;
 }>;
 
 export function PublicIssueListScreen({ locale }: PublicIssueListScreenProps) {
+  const appCopy = useAppCopy();
   const [sort, setSort] = useState<PublicIssueSort>("top");
+  const [status, setStatus] = useState<PublicIssueStatus>("published");
   const [categoryId, setCategoryId] = useState<string | null>(null);
   const [selectedIssueId, setSelectedIssueId] = useState<string | null>(null);
   const categories = useIssueCategories();
@@ -34,6 +36,7 @@ export function PublicIssueListScreen({ locale }: PublicIssueListScreenProps) {
     useUserLocation();
   const issues = usePublicIssues({
     sort,
+    status,
     categoryId,
     latitude: location?.latitude ?? null,
     longitude: location?.longitude ?? null,
@@ -70,8 +73,10 @@ export function PublicIssueListScreen({ locale }: PublicIssueListScreenProps) {
         <IssueFilters
           categories={categories.data}
           sort={sort}
+          status={status}
           categoryId={categoryId}
           onSortChange={setSort}
+          onStatusChange={setStatus}
           onCategoryChange={setCategoryId}
           onRequestLocation={requestLocation}
           isLocating={isLocating}

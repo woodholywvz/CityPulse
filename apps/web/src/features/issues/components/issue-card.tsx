@@ -1,11 +1,12 @@
-/* eslint-disable @next/next/no-img-element */
+"use client";
 
 import { MapPin, MessageSquareText, Sparkles } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { appCopy } from "@/content/copy";
+import { ResponsiveImage } from "@/components/ui/responsive-image";
 import type { PublicIssueSummary } from "@/lib/api/types";
+import { useAppCopy } from "@/lib/i18n-provider";
 import {
   formatAffectedPeopleEstimate,
   formatCompactNumber,
@@ -23,6 +24,7 @@ type IssueCardProps = Readonly<{
 }>;
 
 export function IssueCard({ issue, onOpen, actions, compact = false }: IssueCardProps) {
+  const appCopy = useAppCopy();
   const signalLabel = getIssueSignalLabel(issue);
 
   return (
@@ -30,10 +32,11 @@ export function IssueCard({ issue, onOpen, actions, compact = false }: IssueCard
       <div className={compact ? "grid gap-4 p-4" : "grid gap-5 p-5 sm:p-6"}>
         <div className="overflow-hidden rounded-[1.5rem] border border-border/60 bg-muted/60">
           {issue.cover_image_url ? (
-            <img
+            <ResponsiveImage
               src={issue.cover_image_url}
               alt={issue.title}
-              className={compact ? "h-36 w-full object-cover" : "h-48 w-full object-cover"}
+              className={compact ? "relative h-36 w-full" : "relative h-48 w-full"}
+              sizes={compact ? "(max-width: 640px) 100vw, 40vw" : "(max-width: 1024px) 100vw, 33vw"}
             />
           ) : (
             <div

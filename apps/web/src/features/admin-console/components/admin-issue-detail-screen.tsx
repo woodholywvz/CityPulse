@@ -12,7 +12,6 @@ import { InlineMessage } from "@/components/ui/inline-message";
 import { Input } from "@/components/ui/input";
 import { PageLoading } from "@/components/ui/page-loading";
 import { Textarea } from "@/components/ui/textarea";
-import { adminConsoleCopy } from "@/content/admin-console";
 import {
   AdminKeyValueGrid,
   AdminSectionHeader,
@@ -30,6 +29,7 @@ import {
 } from "@/features/admin-console/lib/presenters";
 import { apiClient } from "@/lib/api/client";
 import { useAuth } from "@/lib/auth/auth-provider";
+import { useAdminCopy } from "@/lib/i18n-provider";
 
 type AdminIssueDetailScreenProps = Readonly<{
   locale: string;
@@ -48,6 +48,7 @@ export function AdminIssueDetailScreen({
   locale,
   issueId,
 }: AdminIssueDetailScreenProps) {
+  const adminConsoleCopy = useAdminCopy();
   const { token, user } = useAuth();
   const isAdmin = user?.role === "admin";
   const detail = useAdminIssueDetail(token, Boolean(isAdmin), issueId);
@@ -256,7 +257,7 @@ export function AdminIssueDetailScreen({
                         {adminConsoleCopy.common.rawValue}
                       </p>
                       <p className="mt-2 text-sm text-slate-100">
-                        {formatMetricValue(factor.raw_value)}
+                        {formatMetricValue(factor.raw_value, adminConsoleCopy.common)}
                       </p>
                     </div>
                     <div>
@@ -266,7 +267,7 @@ export function AdminIssueDetailScreen({
                       <p className="mt-2 text-sm text-slate-100">
                         {Object.keys(factor.details).length
                           ? Object.entries(factor.details)
-                              .map(([key, value]) => `${key}: ${formatMetricValue(value)}`)
+                              .map(([key, value]) => `${key}: ${formatMetricValue(value, adminConsoleCopy.common)}`)
                               .join(" · ")
                           : adminConsoleCopy.common.noData}
                       </p>

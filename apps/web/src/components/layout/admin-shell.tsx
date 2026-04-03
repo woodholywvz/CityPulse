@@ -15,11 +15,12 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-import { AuthStatus } from "@/components/auth/auth-status";
+import { LocaleSwitcher } from "@/components/layout/locale-switcher";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { adminConsoleCopy } from "@/content/admin-console";
+import { useAuth } from "@/lib/auth/auth-provider";
+import { useAdminCopy, useAppCopy } from "@/lib/i18n-provider";
 import { siteConfig } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
@@ -30,6 +31,9 @@ type AdminShellProps = Readonly<{
 
 export function AdminShell({ children, locale }: AdminShellProps) {
   const pathname = usePathname();
+  const adminConsoleCopy = useAdminCopy();
+  const appCopy = useAppCopy();
+  const { isReady, user, logout } = useAuth();
   const navigation: Array<{ href: Route; label: string; icon: LucideIcon }> = [
     {
       href: `/${locale}/admin` as Route,
@@ -65,6 +69,12 @@ export function AdminShell({ children, locale }: AdminShellProps) {
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(34,197,94,0.14),transparent_28%),radial-gradient(circle_at_top_right,rgba(8,145,178,0.16),transparent_30%),linear-gradient(180deg,#08111b_0%,#0f172a_55%,#111827_100%)] text-slate-50">
+      <a
+        href="#main-content"
+        className="sr-only absolute left-4 top-4 rounded-full bg-cyan-300 px-4 py-2 text-sm font-semibold text-slate-950 focus:not-sr-only"
+      >
+        {appCopy.header.skipToContent}
+      </a>
       <div className="container py-4 lg:py-6">
         <div className="grid gap-6 lg:grid-cols-[18rem_minmax(0,1fr)]">
           <aside className="lg:sticky lg:top-6 lg:self-start">
@@ -134,14 +144,56 @@ export function AdminShell({ children, locale }: AdminShellProps) {
                 </Button>
               </div>
 
-              <div className="mt-5 flex items-center gap-2">
-                <ThemeToggle />
-                <AuthStatus locale={locale} />
+              <div className="mt-5 space-y-3 border-t border-white/10 pt-5">
+                <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
+                  <LocaleSwitcher locale={locale} compact />
+                  <ThemeToggle />
+                </div>
+
+                <div className="rounded-[1.5rem] border border-white/10 bg-white/5 p-4">
+                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-slate-400">
+                    {appCopy.header.signedInAs}
+                  </p>
+
+                  {!isReady ? (
+                    <Badge variant="subtle" className="mt-3 h-10 px-4 tracking-[0.2em]">
+                      {appCopy.common.loading}
+                    </Badge>
+                  ) : user ? (
+                    <>
+                      <p className="mt-3 truncate text-sm font-semibold text-white">
+                        {user.full_name}
+                      </p>
+                      <p className="mt-1 truncate text-xs text-slate-400">
+                        {user.email}
+                      </p>
+                      <p className="mt-2 text-xs uppercase tracking-[0.18em] text-cyan-200/75">
+                        {user.role}
+                      </p>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="mt-4 w-full border-white/10 bg-white/5 text-slate-100 hover:bg-white/10"
+                        onClick={logout}
+                      >
+                        {appCopy.header.signOut}
+                      </Button>
+                    </>
+                  ) : (
+                    <Button
+                      asChild
+                      variant="outline"
+                      className="mt-4 w-full border-white/10 bg-white/5 text-slate-100 hover:bg-white/10"
+                    >
+                      <Link href={`/${locale}/auth` as Route}>{appCopy.header.signIn}</Link>
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
           </aside>
 
-          <div className="space-y-6">
+          <div id="main-content" className="space-y-6">
             <header className="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-soft backdrop-blur-xl">
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div className="max-w-3xl">

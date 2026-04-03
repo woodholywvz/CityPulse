@@ -11,7 +11,6 @@ import { Field } from "@/components/ui/field";
 import { InlineMessage } from "@/components/ui/inline-message";
 import { PageLoading } from "@/components/ui/page-loading";
 import { Textarea } from "@/components/ui/textarea";
-import { adminConsoleCopy } from "@/content/admin-console";
 import {
   AdminKeyValueGrid,
   AdminMetricCard,
@@ -31,15 +30,19 @@ import {
 } from "@/features/admin-console/lib/presenters";
 import { apiClient } from "@/lib/api/client";
 import { useAuth } from "@/lib/auth/auth-provider";
+import { useAdminCopy } from "@/lib/i18n-provider";
 
 type AdminUserProfileScreenProps = Readonly<{
   locale: string;
   userId: string;
 }>;
 
-function formatFactorDetails(details: Record<string, unknown>) {
+function formatFactorDetails(
+  details: Record<string, unknown>,
+  adminConsoleCopy: ReturnType<typeof useAdminCopy>,
+) {
   const entries = Object.entries(details).map(
-    ([key, value]) => `${key}: ${formatMetricValue(value)}`,
+    ([key, value]) => `${key}: ${formatMetricValue(value, adminConsoleCopy.common)}`,
   );
   return entries.length ? entries.join(" · ") : adminConsoleCopy.common.noData;
 }
@@ -48,6 +51,7 @@ export function AdminUserProfileScreen({
   locale,
   userId,
 }: AdminUserProfileScreenProps) {
+  const adminConsoleCopy = useAdminCopy();
   const { token, user } = useAuth();
   const isAdmin = user?.role === "admin";
   const detail = useAdminUserProfile(token, Boolean(isAdmin), userId);
@@ -122,7 +126,7 @@ export function AdminUserProfileScreen({
           />
           {current.integrity ? (
             <AdminStatusBadge
-              label={formatAbuseRiskLabel(current.integrity.abuse_risk_level)}
+              label={formatAbuseRiskLabel(current.integrity.abuse_risk_level, adminConsoleCopy.common)}
               tone={formatStatusTone(current.integrity.abuse_risk_level)}
             />
           ) : null}
@@ -223,7 +227,7 @@ export function AdminUserProfileScreen({
                   >
                     <div className="flex flex-wrap items-center gap-2">
                       <AdminStatusBadge
-                        label={formatSeverity(event.severity)}
+                        label={formatSeverity(event.severity, adminConsoleCopy.common)}
                         tone={formatStatusTone(event.severity)}
                       />
                       <AdminStatusBadge label={event.event_type} tone="subtle" />
@@ -291,7 +295,7 @@ export function AdminUserProfileScreen({
                       ) : null}
                     </div>
                     <p className="mt-3 text-sm leading-6 text-slate-300">
-                      {formatFactorDetails(factor.details)}
+                      {formatFactorDetails(factor.details, adminConsoleCopy)}
                     </p>
                   </article>
                 ))
@@ -319,7 +323,7 @@ export function AdminUserProfileScreen({
                       />
                     </div>
                     <p className="mt-3 text-sm leading-6 text-slate-300">
-                      {formatFactorDetails(factor.details)}
+                      {formatFactorDetails(factor.details, adminConsoleCopy)}
                     </p>
                   </article>
                 ))

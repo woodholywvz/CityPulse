@@ -1,4 +1,4 @@
-import { adminConsoleCopy } from "@/content/admin-console";
+import type { AppMessages } from "@/messages/en";
 import {
   formatCompactNumber,
   formatIssueDate,
@@ -15,6 +15,8 @@ import type {
 
 export { formatCompactNumber, formatIssueDate, formatIssueStatus };
 
+type AdminCommonCopy = AppMessages["adminConsole"]["common"];
+
 export function formatPercent(value: number) {
   return `${(value * 100).toFixed(0)}%`;
 }
@@ -26,14 +28,14 @@ export function formatSignedNumber(value: number) {
   return value.toFixed(1);
 }
 
-export function formatAbuseRiskLabel(level: AbuseRiskLevel) {
+export function formatAbuseRiskLabel(level: AbuseRiskLevel, copy: AdminCommonCopy) {
   if (level === "high") {
-    return adminConsoleCopy.common.high;
+    return copy.high;
   }
   if (level === "medium") {
-    return adminConsoleCopy.common.medium;
+    return copy.medium;
   }
-  return adminConsoleCopy.common.low;
+  return copy.low;
 }
 
 export function formatLifecycleLabel(value: string) {
@@ -69,30 +71,30 @@ export function formatStatusTone(
   return "subtle";
 }
 
-export function formatSeverity(level: IntegrityEventSeverity) {
+export function formatSeverity(level: IntegrityEventSeverity, copy: AdminCommonCopy) {
   if (level === "high") {
-    return adminConsoleCopy.common.high;
+    return copy.high;
   }
   if (level === "medium") {
-    return adminConsoleCopy.common.medium;
+    return copy.medium;
   }
-  return adminConsoleCopy.common.low;
+  return copy.low;
 }
 
-export function formatMetricValue(value: unknown) {
+export function formatMetricValue(value: unknown, copy: AdminCommonCopy) {
   if (typeof value === "number") {
     return Number.isInteger(value) ? String(value) : value.toFixed(2);
   }
   if (typeof value === "boolean") {
-    return value ? adminConsoleCopy.common.yes : adminConsoleCopy.common.no;
+    return value ? copy.yes : copy.no;
   }
   if (typeof value === "string") {
     return value;
   }
   if (Array.isArray(value)) {
-    return value.length ? value.join(", ") : adminConsoleCopy.common.noData;
+    return value.length ? value.join(", ") : copy.noData;
   }
-  return adminConsoleCopy.common.noData;
+  return copy.noData;
 }
 
 export function formatDistributionValue(item: AdminDistributionItem) {
@@ -102,9 +104,12 @@ export function formatDistributionValue(item: AdminDistributionItem) {
   return formatCompactNumber(item.count);
 }
 
-export function getIntegritySummary(identity: UserIntegrityCompact | null) {
+export function getIntegritySummary(
+  identity: UserIntegrityCompact | null,
+  copy: AdminCommonCopy,
+) {
   if (!identity) {
-    return adminConsoleCopy.common.noData;
+    return copy.noData;
   }
-  return `${identity.user.full_name} · ${identity.trust_score.toFixed(1)} trust`;
+  return `${identity.user.full_name} ${copy.details} ${identity.trust_score.toFixed(1)} ${copy.signal}`;
 }

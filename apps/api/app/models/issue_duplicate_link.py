@@ -3,10 +3,11 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 from uuid import UUID
 
-from sqlalchemy import JSON, Boolean, Enum, Float, ForeignKey, Index, UniqueConstraint, Uuid
+from sqlalchemy import JSON, Boolean, Float, ForeignKey, Index, UniqueConstraint, Uuid
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, TimestampMixin, UUIDPrimaryKeyMixin
+from app.models.enum_types import enum_values_type
 from app.models.enums import DuplicateResolutionStatus
 
 if TYPE_CHECKING:
@@ -48,10 +49,9 @@ class IssueDuplicateLink(UUIDPrimaryKeyMixin, TimestampMixin, Base):
         ForeignKey("users.id"),
     )
     status: Mapped[DuplicateResolutionStatus] = mapped_column(
-        Enum(
+        enum_values_type(
             DuplicateResolutionStatus,
             name="duplicate_resolution_status",
-            native_enum=False,
         ),
         default=DuplicateResolutionStatus.POSSIBLE,
         nullable=False,

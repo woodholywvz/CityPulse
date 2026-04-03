@@ -8,78 +8,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import Settings, get_settings
 from app.core.security import hash_password
 from app.db.session import AsyncSessionLocal
-from app.models import IssueCategory, User
+from app.models import User
 from app.models.enums import UserRole
-
-DEFAULT_CATEGORIES = [
-    {
-        "slug": "roads",
-        "display_name": "Roads",
-        "description": "Potholes, damaged surfaces, and road safety issues.",
-        "severity_baseline": 0.72,
-        "affected_people_baseline": 45,
-    },
-    {
-        "slug": "sanitation",
-        "display_name": "Sanitation",
-        "description": "Garbage, dumping, and public cleanliness concerns.",
-        "severity_baseline": 0.58,
-        "affected_people_baseline": 35,
-    },
-    {
-        "slug": "lighting",
-        "display_name": "Lighting",
-        "description": "Streetlight outages and dark public areas.",
-        "severity_baseline": 0.64,
-        "affected_people_baseline": 28,
-    },
-    {
-        "slug": "safety",
-        "display_name": "Safety",
-        "description": "Hazards, public safety risks, and dangerous infrastructure.",
-        "severity_baseline": 0.86,
-        "affected_people_baseline": 70,
-    },
-    {
-        "slug": "transport",
-        "display_name": "Transport",
-        "description": "Bus stops, transit access, and street mobility issues.",
-        "severity_baseline": 0.68,
-        "affected_people_baseline": 55,
-    },
-]
-
-
-async def seed_categories_in_session(session: AsyncSession) -> int:
-    existing_slugs = set(
-        (
-            await session.scalars(
-                select(IssueCategory.slug).where(
-                    IssueCategory.slug.in_([item["slug"] for item in DEFAULT_CATEGORIES])
-                )
-            )
-        ).all()
-    )
-
-    created_count = 0
-    for category in DEFAULT_CATEGORIES:
-        if category["slug"] in existing_slugs:
-            existing_category = await session.scalar(
-                select(IssueCategory).where(IssueCategory.slug == category["slug"])
-            )
-            if existing_category is not None:
-                existing_category.display_name = category["display_name"]
-                existing_category.description = category["description"]
-                existing_category.severity_baseline = category["severity_baseline"]
-                existing_category.affected_people_baseline = category[
-                    "affected_people_baseline"
-                ]
-            continue
-
-        session.add(IssueCategory(**category))
-        created_count += 1
-
-    return created_count
+from app.scripts.category_seed import seed_categories_in_session
+from app.scripts.demo_seed import seed_demo_issues_in_session
+from app.scripts.repair_legacy_data import repair_legacy_enum_values
 
 
 async def seed_categories() -> int:
@@ -124,12 +57,15 @@ async def seed_default_admin(settings: Settings) -> bool:
 async def main() -> None:
     settings = get_settings()
     async with AsyncSessionLocal() as session:
+        await repair_legacy_enum_values(session)
         categories_created = await seed_categories_in_session(session)
         admin_created = await seed_default_admin_in_session(session, settings)
+        demo_issues_created = await seed_demo_issues_in_session(session, settings)
         await session.commit()
 
     print(f"Seeded categories: {categories_created}")
     print(f"Default admin created: {admin_created}")
+    print(f"Seeded demo Almaty issues: {demo_issues_created}")
 
 
 if __name__ == "__main__":

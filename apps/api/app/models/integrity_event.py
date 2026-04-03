@@ -3,10 +3,11 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 from uuid import UUID
 
-from sqlalchemy import JSON, Enum, ForeignKey, Index, String, Text, Uuid
+from sqlalchemy import JSON, ForeignKey, Index, String, Text, Uuid
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, TimestampMixin, UUIDPrimaryKeyMixin
+from app.models.enum_types import enum_values_type
 from app.models.enums import IntegrityEventSeverity
 
 if TYPE_CHECKING:
@@ -28,7 +29,7 @@ class IntegrityEvent(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     )
     event_type: Mapped[str] = mapped_column(String(120), nullable=False)
     severity: Mapped[IntegrityEventSeverity] = mapped_column(
-        Enum(IntegrityEventSeverity, name="integrity_event_severity", native_enum=False),
+        enum_values_type(IntegrityEventSeverity, name="integrity_event_severity"),
         default=IntegrityEventSeverity.LOW,
         nullable=False,
     )

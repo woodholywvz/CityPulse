@@ -8,9 +8,9 @@ import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { InlineMessage } from "@/components/ui/inline-message";
-import { appCopy } from "@/content/copy";
 import { IssueDetailsContent } from "@/features/issues/components/issue-details-content";
 import { usePublicIssueDetail } from "@/features/issues/hooks/use-public-issues";
+import { useAppCopy } from "@/lib/i18n-provider";
 
 type PublicIssueDetailScreenProps = Readonly<{
   locale: string;
@@ -21,6 +21,7 @@ export function PublicIssueDetailScreen({
   locale,
   issueId,
 }: PublicIssueDetailScreenProps) {
+  const appCopy = useAppCopy();
   const issue = usePublicIssueDetail(issueId, true);
 
   return (
