@@ -24,6 +24,7 @@ class Settings(BaseSettings):
             "http://0.0.0.0:3000",
         ]
     )
+    allowed_origin_regex_override: str | None = None
     database_url: str = (
         "postgresql+asyncpg://citypulse:citypulse@localhost:5432/citypulse"
     )
@@ -46,6 +47,7 @@ class Settings(BaseSettings):
     default_admin_password: str = "ChangeMe123!"
     default_admin_full_name: str = "CityPulse Admin"
     seed_demo_data: bool = False
+    bootstrap_database_on_startup: bool = False
 
     @field_validator("allowed_origins", mode="before")
     @classmethod
@@ -56,6 +58,9 @@ class Settings(BaseSettings):
 
     @property
     def allowed_origin_regex(self) -> str | None:
+        if self.allowed_origin_regex_override:
+            return self.allowed_origin_regex_override
+
         if self.environment not in {"local", "development"}:
             return None
 

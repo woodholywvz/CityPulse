@@ -31,6 +31,7 @@ export function CitizenShell({ children, locale }: CitizenShellProps) {
   const pathname = usePathname();
   const appCopy = useAppCopy();
   const isDiscoverRoute = pathname === `/${locale}/discover`;
+  const mobileBottomInsetClass = "pb-[calc(6.5rem+env(safe-area-inset-bottom))]";
   const navigation: Array<{
     href: Route;
     label: string;
@@ -72,18 +73,18 @@ export function CitizenShell({ children, locale }: CitizenShellProps) {
     );
 
   return (
-    <div className="min-h-screen pb-24 md:pb-10">
-      <header className="sticky top-0 z-30 border-b border-border/60 bg-background/85 backdrop-blur-xl">
+    <div className={cn("min-h-screen md:pb-10", mobileBottomInsetClass)}>
+      <header className="sticky top-0 z-40 border-b border-border/60 bg-background/88 backdrop-blur-xl">
         <a
           href="#main-content"
           className="sr-only absolute left-4 top-4 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground focus:not-sr-only"
         >
           {appCopy.header.skipToContent}
         </a>
-        <div className="container py-4">
+        <div className="container py-3 md:py-4">
           <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
             <Link href={`/${locale}` as Route} className="flex min-w-0 items-center gap-3">
-              <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-sm font-bold text-primary-foreground shadow-soft">
+              <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary text-sm font-bold text-primary-foreground shadow-soft md:h-12 md:w-12">
                 CP
               </span>
               <div className="min-w-0">
@@ -104,7 +105,10 @@ export function CitizenShell({ children, locale }: CitizenShellProps) {
             </div>
           </div>
 
-          <nav className="mt-4 flex flex-wrap items-center gap-2" aria-label={appCopy.citizenShell.mobileNavigation}>
+          <nav
+            className="mt-4 hidden flex-wrap items-center gap-2 md:flex"
+            aria-label={appCopy.citizenShell.mobileNavigation}
+          >
             {navigation.map((item) => {
               const Icon = item.icon;
               const isActive =
@@ -147,12 +151,12 @@ export function CitizenShell({ children, locale }: CitizenShellProps) {
           </section>
         )}
 
-        <div className={isDiscoverRoute ? undefined : "mt-8"}>{children}</div>
+        <div className={cn(isDiscoverRoute ? "pb-4" : "mt-8")}>{children}</div>
       </main>
 
       <nav
         aria-label={appCopy.citizenShell.mobileNavigation}
-        className="fixed inset-x-0 bottom-4 z-30 mx-auto flex w-[calc(100%-1.5rem)] max-w-md items-center justify-between rounded-[1.75rem] border border-border/70 bg-background/92 px-3 py-2 shadow-soft backdrop-blur md:hidden"
+        className="fixed inset-x-0 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-40 mx-auto grid w-[calc(100%-1rem)] max-w-lg grid-cols-5 items-center gap-1 rounded-[1.4rem] border border-border/70 bg-background/94 px-2 py-2 shadow-soft backdrop-blur md:hidden"
       >
         {navigation.map((item) => {
           const Icon = item.icon;
@@ -164,13 +168,18 @@ export function CitizenShell({ children, locale }: CitizenShellProps) {
             <Link
               key={item.href}
               href={item.href}
+              aria-label={item.label}
               className={cn(
-                "flex min-w-0 flex-1 flex-col items-center gap-1 rounded-2xl px-2 py-2 text-xs font-semibold",
-                isActive ? "bg-primary/10 text-primary" : "text-muted-foreground",
+                "flex min-w-0 flex-col items-center justify-center gap-1 rounded-[1rem] px-1 py-2 text-[10px] font-semibold leading-none transition-colors",
+                isActive
+                  ? "bg-primary/10 text-primary"
+                  : "text-muted-foreground hover:bg-card/70",
               )}
             >
               <Icon className="h-4 w-4" />
-              <span className="truncate">{item.label}</span>
+              <span className="sr-only min-[390px]:not-sr-only min-[390px]:block max-w-full truncate text-center text-[10px] leading-3">
+                {item.label}
+              </span>
             </Link>
           );
         })}

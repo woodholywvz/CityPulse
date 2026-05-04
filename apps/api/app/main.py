@@ -7,6 +7,7 @@ from app.api.router import api_router
 from app.core.config import get_settings
 from app.core.exceptions import register_exception_handlers
 from app.core.logging import configure_logging
+from app.db.bootstrap import bootstrap_database_if_enabled
 from app.middleware.request_context import RequestContextMiddleware
 
 configure_logging()
@@ -15,6 +16,7 @@ settings = get_settings()
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
+    await bootstrap_database_if_enabled()
     yield
 
 

@@ -220,7 +220,7 @@ export function SwipeDeck({ issues, listHref, onAction, onOpen, onRefresh }: Swi
 
   return (
     <section
-      className="space-y-5"
+      className="space-y-5 pb-6 md:pb-0"
       aria-describedby={keyboardHintId}
       onKeyDown={(event) => {
         if (!activeIssue) {
@@ -239,7 +239,7 @@ export function SwipeDeck({ issues, listHref, onAction, onOpen, onRefresh }: Swi
       }}
       tabIndex={0}
     >
-      <div className="relative h-[640px]" aria-live="polite">
+      <div className="relative h-[560px] min-[390px]:h-[600px] sm:h-[640px]" aria-live="polite">
         <AnimatePresence initial={false}>
           {visibleIssues
             .map((issue, index) => ({ issue, index }))
